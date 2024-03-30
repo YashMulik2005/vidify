@@ -9,7 +9,7 @@ function ChannelCard({ data }) {
         <div onClick={() => {
             navigate(`/channel/${data?._id}`)
         }} className=' dark:text-white cursor-pointer bg-white border dark:border-none dark:bg-medium_black rounded-lg p-3 gap1 flex flex-col justify-center items-center'>
-            <img className=' w-40 h-40  rounded-full object-contain'
+            <img className=' w-40 h-40  rounded-full object-cover'
                 src={data?.profile_image} />
             <h1 className='mt-2 font-semibold text-black  dark:text-white'>{data?.name}</h1>
             <h1 className=' text-center line-clamp-3 text-sm text-gray-500'>{data?.description}</h1>

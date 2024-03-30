@@ -13,6 +13,7 @@ import ChannelList from './components/channel/ChannelList';
 import Test from './components/home/Test';
 import ChannelIndex from './components/channel/ChannelIndex';
 import YourChannel from './components/channel/YourChannel';
+import VideoIndex from './components/videos/VideoIndex';
 
 function App() {
   const { darkstate } = useMain();
@@ -41,6 +42,7 @@ function App() {
               <Route path='channel' element={<ChannelList />} />
               <Route path='channel/:id' element={<ChannelIndex />} />
               <Route path="yourchannel" element={<YourChannel />} />
+              <Route path='video/:id' element={<VideoIndex />} />
               <Route path="test" element={<Test />} />
             </Route>
           </Routes>

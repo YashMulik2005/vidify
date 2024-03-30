@@ -4,8 +4,10 @@ import { RxCross2 } from "react-icons/rx";
 import { MdCloudUpload } from "react-icons/md";
 import axios from 'axios';
 import Multiselect from 'multiselect-react-dropdown';
+import { useNavigate } from 'react-router-dom';
 
-function VideoCard({ type }) {
+function VideoCard({ type, data }) {
+    console.log(data, 898989);
     const [videoOption, setvideoOption] = useState(false);
     const [category, setcategory] = useState([])
     const [thumbnailName, setThumbnailName] = useState("");
@@ -14,7 +16,11 @@ function VideoCard({ type }) {
     const [selectedTopicIds, setselectedTopicIds] = useState([]);
     const [title, settitle] = useState("")
     const [desc, setdesc] = useState("")
+    const [videoData, setVideoData] = useState()
+    const [channelData, setchannelData] = useState()
     const imageRef = useRef(null);
+
+    const navigate = useNavigate()
 
     const handleedit = (e) => {
         e.preventDefault();
@@ -32,8 +38,20 @@ function VideoCard({ type }) {
         document.getElementById('my_modal_2').close();
     }
     const getCategory = async () => {
-        const res = await axios.get("http://localhost:3000/api/category/getCategory")
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/category/getCategory`)
         setcategory(res.data.data.category)
+    }
+
+    const getVideoData = async () => {
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/video/getvideo/${data}`)
+        // console.log(res.data.data);
+        setVideoData(res.data.data);
+    }
+
+    const getChannelData = async () => {
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/channel/oneChannel/${videoData?.channel}`)
+        // console.log(res.data.data);
+        setchannelData(res.data.data);
     }
 
     const handleThambnailchange = (e) => {
@@ -51,35 +69,42 @@ function VideoCard({ type }) {
         if (type == "your") {
             getCategory()
         }
+        getVideoData()
     }, [])
+
+    useEffect(() => {
+        getChannelData()
+    }, [videoData])
 
 
     return (
         <div className=' h-full w-full'>
             <div className=' rounded-lg p-1 relative'>
-                <section className={` ${type == "your" ? "" : "hidden"} absolute right-4 top-3 text-black  bg-white p-[6px] rounded-full `}>
-                    {
-                        <BsThreeDotsVertical size={15} className=' cursor-pointer' onClick={() => { setvideoOption(true) }} />
-                    }
+                <section onClick={() => navigate(`/video/${videoData._id}`)} className=' cursor-pointer'>
+                    <section className={` ${type == "your" ? "" : "hidden"} absolute right-4 top-3 text-black  bg-white p-[6px] rounded-full `}>
+                        {
+                            <BsThreeDotsVertical size={15} className=' cursor-pointer' onClick={() => { setvideoOption(true) }} />
+                        }
+                    </section>
+                    <section className={` ${videoOption ? "" : "hidden"} text-sm absolute right-4 top-3 text-black bg-white px-4 py-2 rounded-lg`} >
+                        <h1 className=' cursor-pointer flex justify-end mx-[-2px]'><RxCross2 size={18} onClick={() => { setvideoOption(false) }} /></h1>
+                        <h1 className=' cursor-pointer' onClick={() => document.getElementById('my_modal_1').showModal()}>Edit</h1>
+                        <h1 className=' cursor-pointer' onClick={() => document.getElementById('my_modal_2').showModal()}>Delete</h1>
+                    </section>
+                    <div>
+                        <img className=' rounded-lg h-44 w-full object-fill'
+                            src={videoData?.thambnail} />
+                    </div>
                 </section>
-                <section className={` ${videoOption ? "" : "hidden"} text-sm absolute right-4 top-3 text-black bg-white px-4 py-2 rounded-lg`} >
-                    <h1 className=' cursor-pointer flex justify-end mx-[-2px]'><RxCross2 size={18} onClick={() => { setvideoOption(false) }} /></h1>
-                    <h1 className=' cursor-pointer' onClick={() => document.getElementById('my_modal_1').showModal()}>Edit</h1>
-                    <h1 className=' cursor-pointer' onClick={() => document.getElementById('my_modal_2').showModal()}>Delete</h1>
-                </section>
-                <div>
-                    <img className=' rounded-lg h-40 w-full'
-                        src='https://img.freepik.com/free-photo/sports-car-driving-asphalt-road-night-generative-ai_188544-8052.jpg' />
-                </div>
                 <div className=' grid grid-cols-[45px_auto] mt-2 items-center gap-1'>
-                    <img className=' rounded-full  w-8 h-8'
-                        src='https://static.vecteezy.com/system/resources/thumbnails/008/440/451/small/farm-animal-livestock-circle-badge-logo-free-vector.jpg' />
+                    <img className=' rounded-full  w-8 h-8 object-cover'
+                        src={channelData?.profile_image} />
                     <section >
-                        <p className=' text-sm dark:text-white text-black'>bhjgsuyc jhvuyscdt jhvdycdyte hvdg</p>
-                        <p className=' text-sm text-gray-400'>channel name</p>
+                        <p className=' text-sm dark:text-white text-black'>{videoData?.title}</p>
+                        <p className=' text-sm text-gray-400'>{channelData?.name}</p>
                         <section className=' mt-1 text-gray-500 flex text-xs justify-between items-center w-[full]'>
                             <p className=''>500 views</p>
-                            <p>1 day ago</p>
+                            <p>{videoData?.time ? videoData.time : "---"}</p>
                         </section>
                     </section>
                 </div>
