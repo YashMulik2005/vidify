@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { PulseLoader } from 'react-spinners'
 import { HashLoader } from 'react-spinners'
+import AuthHook from '../Context/AuthContext'
 
 function Topics() {
     const [dataloader, setdataloader] = useState(false)
     const [category, setcategory] = useState([]);
     const [selectedTpic, setselectedTpic] = useState("all")
+    const { setuserDetailsLoader } = AuthHook();
 
     const getCategory = async () => {
         setdataloader(true)

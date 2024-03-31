@@ -15,13 +15,14 @@ import { FiUsers } from "react-icons/fi";
 import { useNavigate } from 'react-router-dom'
 
 function Navbar() {
-    const { userDetails, setuserDetails, token } = AuthHook()
+    const { userDetails, setuserDetails, token, setuserDetailsLoader, userDetailsLoader } = AuthHook()
     const { toggletheme, darkstate, setsidebarSize, sidebarSize, path, setpath } = useMain();
     const [searchShow, setsearchShow] = useState(false);
 
     const navigate = useNavigate()
 
     const getUserDetails = async () => {
+
         try {
             const res = await axios.get("http://localhost:3000/api/auth/userDetails", {
                 headers: {
@@ -34,6 +35,8 @@ function Navbar() {
                 setuserDetails(undefined)
             }
         }
+        console.log("settofalse");
+        setuserDetailsLoader(false)
     }
     useEffect(() => {
         getUserDetails()

@@ -8,6 +8,8 @@ import createChannel from '../../assets/createChannel.png';
 import toast from 'react-hot-toast';
 import { BeatLoader } from 'react-spinners';
 import noData from '../../assets/noData.png';
+import { MoonLoader } from 'react-spinners'
+import ModelLoader from '../home/ModelLoader';
 
 function YourChannel() {
     const [data, setdata] = useState();
@@ -41,7 +43,7 @@ function YourChannel() {
     const [channelLoader, setChannelLoader] = useState(false);
     const [videoLoader, setVideoLoader] = useState(false);
 
-    const { userDetails, token } = AuthHook();
+    const { userDetails, token, userDetailsLoader, setuserDetailsLoader } = AuthHook();
 
     const handleVideoChange = (e) => {
         setaddVideoError(false)
@@ -68,6 +70,7 @@ function YourChannel() {
             setaddVideoError(true);
         } else {
             setVideoLoader(true)
+            setuserDetailsLoader(true);
             setaddVideoError(false);
             const thambnailData = new FormData();
             thambnailData.append("file", thumbnail);
@@ -81,7 +84,9 @@ function YourChannel() {
             videoData.append("upload_preset", "vidify_video_preset");
             const videoRes = await axios.post(`https://api.cloudinary.com/v1_1/dsq6bfksv/video/upload`, videoData);
             const videoUrl = videoRes.data.secure_url;
+            const videoPublicId = videoRes.data.public_id;
             console.log(videoUrl);
+            console.log(videoPublicId);
 
             const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/video/addVideo`, {
                 title: title,
@@ -89,7 +94,8 @@ function YourChannel() {
                 thambnail: thambnailUrl,
                 video: videoUrl,
                 topic: selectedTopicIds,
-                channel: userDetails.channel
+                channel: userDetails.channel,
+                public_id: videoPublicId
             }, {
                 headers: {
                     "authentication": `bearer ${token}`
@@ -104,6 +110,7 @@ function YourChannel() {
                 }, 1000);
             }
             setVideoLoader(false)
+            setuserDetailsLoader(false)
         }
     };
 
@@ -276,6 +283,7 @@ function YourChannel() {
 
                         <dialog id="my_modal_3" className="modal">
                             <div className="modal-box bg-white text-black dark:bg-medium_black dark:text-white sm:max-w-[90vh] sm:max-h-[700vh] max-w-[90svh] max-h-[70svh]">
+                                <ModelLoader data={videoLoader} />
                                 <form method="dialog">
                                     <button className="btn btn-md btn-circle btn-ghost text-lg absolute right-2 top-2">✕</button>
                                 </form>
@@ -346,6 +354,7 @@ function YourChannel() {
 
                         <dialog id="my_modal_4" className="modal">
                             <div className="modal-box bg-white text-black dark:bg-medium_black dark:text-white sm:max-w-[90vh] sm:max-h-[85vh] max-w-[90svh] max-h-[85svh]">
+                                <ModelLoader data={channelLoader} />
                                 <form method="dialog">
                                     <button className="btn btn-md btn-circle btn-ghost text-lg absolute right-2 top-2">✕</button>
                                 </form>

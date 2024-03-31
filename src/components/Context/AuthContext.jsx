@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
     const [formdata, setformdata] = useState();
     const [token, settoken] = useState(Cookies.get("token") ? Cookies.get("token") : undefined)
     const [userDetails, setuserDetails] = useState({})
+    const [userDetailsLoader, setuserDetailsLoader] = useState(true);
 
     // const refreshToken = async (teq, res) => {
     //     if (Cookies.get("token")) {
@@ -33,7 +34,9 @@ export const AuthProvider = ({ children }) => {
         token,
         settoken,
         userDetails,
-        setuserDetails
+        setuserDetails,
+        userDetailsLoader,
+        setuserDetailsLoader
     }
     return <AuthContext.Provider value={value}>
         {children}

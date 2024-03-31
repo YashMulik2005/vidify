@@ -12,10 +12,11 @@ function VideoIndex() {
     const { id } = useParams()
     const [videoData, setvideoData] = useState()
     const [channelData, setchannelData] = useState()
+    const [hlsLink, sethlsLink] = useState()
 
     const getVideoData = async () => {
         const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/video/getvideo/${id}`)
-        console.log(res.data.data);
+        //console.log(res.data.data);
         setvideoData(res.data.data);
     }
 
@@ -24,24 +25,32 @@ function VideoIndex() {
         setchannelData(res.data.data);
     }
 
+    const getVideoURL = async () => {
+        const res = await axios.post("http://localhost:3000/Image", { public_id: videoData?.public_id })
+        console.log(res.data.hls_url, 8989);
+        sethlsLink(res.data.hls_url)
+    }
+
     useEffect(() => {
         getVideoData()
     }, [])
 
     useEffect(() => {
         getChannelData()
+        getVideoURL()
     }, [videoData])
 
     return (
         <div className=' flex flex-col md:flex-row pt-3 px-3 overflow-y-auto'>
             <div className=' w-[100%] md:w-[65%] pt-5 md:px-5 overflow-y-auto'>
-                <section className=' w-full h-96 rounded-xl bg-medium_black p-1 mb-2'>
+                <section className=' w-full h-96 rounded-xl bg-medium_black pb-[2px] px-[2px] mb-2'>
                     <ReactPlayer
-                        url="https://res.cloudinary.com/dsq6bfksv/video/upload/v1/vidify_videos/arckqdlceauea5zmqbqn?_a=BAMHUyP80"
+                        url={hlsLink}
                         controls={true}
                         width="100%"
                         height="100%"
                         playing={true}
+                    // style={{ border: '1px solid #ccc', borderRadius: '8px' }}
                     />
                 </section>
                 <section className=' py-1 px-2'>

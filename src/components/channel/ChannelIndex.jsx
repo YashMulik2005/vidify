@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import VideoCard from '../videos/VideoCard'
 import { useParams } from 'react-router-dom'
 import axios from 'axios';
+import noData from '../../assets/noData.png'
 
 function ChannelIndex() {
     const { id } = useParams();

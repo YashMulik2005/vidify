@@ -5,9 +5,13 @@ import { MdCloudUpload } from "react-icons/md";
 import axios from 'axios';
 import Multiselect from 'multiselect-react-dropdown';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast'
+import moment from 'moment';
+import AuthHook from '../Context/AuthContext';
+import ModelLoader from '../home/ModelLoader';
 
 function VideoCard({ type, data }) {
-    console.log(data, 898989);
+    const { token } = AuthHook()
     const [videoOption, setvideoOption] = useState(false);
     const [category, setcategory] = useState([])
     const [thumbnailName, setThumbnailName] = useState("");
@@ -19,23 +23,65 @@ function VideoCard({ type, data }) {
     const [videoData, setVideoData] = useState()
     const [channelData, setchannelData] = useState()
     const imageRef = useRef(null);
+    const [editError, seteditError] = useState(false);
+    const [updateLoader, setupdateLoader] = useState(false)
+    const [deleteLoader, setdeleteLoader] = useState(false)
 
     const navigate = useNavigate()
 
-    const handleedit = (e) => {
-        e.preventDefault();
-        const formdata = {
-            title: title,
-            description: desc,
-            thambnail: thambnail,
-            topic: selectedTopicIds
-        }
-        console.log(formdata);
+    const setFiledsToInitial = () => {
+        settitle("");
+        setdesc("")
+        setselectedTopicIds([])
+        setselectedTopics([])
+
     }
 
-    const hadledelete = (e) => {
+    const handleedit = async (e) => {
+        e.preventDefault();
+        setupdateLoader(true)
+        if (title === "" || desc === "" || selectedTopicIds.length === 0) {
+            seteditError(true);
+        } else {
+            const res = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/video/updatevideo/${data}`,
+                { title: title, description: desc, topic: selectedTopicIds },
+                {
+                    headers: {
+                        "authentication": `bearer ${token}`
+                    }
+                })
+            //console.log(res);
+            if (res.data.status) {
+                document.getElementById('my_modal_1').close();
+                toast.success("Video Information Edited sucessfully...")
+                window.location.reload();
+                setFiledsToInitial()
+            } else {
+                document.getElementById('my_modal_1').close();
+                toast.success("Something went wrong")
+                setFiledsToInitial()
+            }
+        }
+        setupdateLoader(false)
+    }
+
+    const hadledelete = async (e) => {
         e.preventDefault()
-        document.getElementById('my_modal_2').close();
+        setdeleteLoader(true)
+        const res = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/video/deletevideo/${data}`, {
+            headers: {
+                "authentication": `bearer ${token}`
+            }
+        })
+        if (res.data.status) {
+            document.getElementById('my_modal_2').close();
+            toast.success("Video delete sucessfully...")
+            window.location.reload();
+        } else {
+            document.getElementById('my_modal_2').close();
+            toast.error("Something went wrong.")
+        }
+        setdeleteLoader(false)
     }
     const getCategory = async () => {
         const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/category/getCategory`)
@@ -60,6 +106,7 @@ function VideoCard({ type, data }) {
     }
 
     const handleTopicSelect = (selectedList, selectedItem) => {
+        seteditError(false)
         const selectedIds = selectedList.map(item => item._id);
         setselectedTopics(selectedList);
         setselectedTopicIds(selectedIds);
@@ -74,6 +121,9 @@ function VideoCard({ type, data }) {
 
     useEffect(() => {
         getChannelData()
+        // console.log(videoData.title);
+        settitle(videoData?.title)
+        setdesc(videoData?.description)
     }, [videoData])
 
 
@@ -83,13 +133,25 @@ function VideoCard({ type, data }) {
                 <section onClick={() => navigate(`/video/${videoData._id}`)} className=' cursor-pointer'>
                     <section className={` ${type == "your" ? "" : "hidden"} absolute right-4 top-3 text-black  bg-white p-[6px] rounded-full `}>
                         {
-                            <BsThreeDotsVertical size={15} className=' cursor-pointer' onClick={() => { setvideoOption(true) }} />
+                            <BsThreeDotsVertical size={15} className=' cursor-pointer' onClick={(e) => {
+                                e.stopPropagation();
+                                setvideoOption(true)
+                            }} />
                         }
                     </section>
                     <section className={` ${videoOption ? "" : "hidden"} text-sm absolute right-4 top-3 text-black bg-white px-4 py-2 rounded-lg`} >
-                        <h1 className=' cursor-pointer flex justify-end mx-[-2px]'><RxCross2 size={18} onClick={() => { setvideoOption(false) }} /></h1>
-                        <h1 className=' cursor-pointer' onClick={() => document.getElementById('my_modal_1').showModal()}>Edit</h1>
-                        <h1 className=' cursor-pointer' onClick={() => document.getElementById('my_modal_2').showModal()}>Delete</h1>
+                        <h1 className=' cursor-pointer flex justify-end mx-[-2px]'><RxCross2 size={18} onClick={(e) => {
+                            e.stopPropagation();
+                            setvideoOption(false)
+                        }} /></h1>
+                        <h1 className=' cursor-pointer' onClick={(e) => {
+                            e.stopPropagation();
+                            document.getElementById('my_modal_1').showModal()
+                        }}>Edit</h1>
+                        <h1 className=' cursor-pointer' onClick={(e) => {
+                            e.stopPropagation();
+                            document.getElementById('my_modal_2').showModal()
+                        }}>Delete</h1>
                     </section>
                     <div>
                         <img className=' rounded-lg h-44 w-full object-fill'
@@ -104,7 +166,7 @@ function VideoCard({ type, data }) {
                         <p className=' text-sm text-gray-400'>{channelData?.name}</p>
                         <section className=' mt-1 text-gray-500 flex text-xs justify-between items-center w-[full]'>
                             <p className=''>500 views</p>
-                            <p>{videoData?.time ? videoData.time : "---"}</p>
+                            <p>{videoData?.time ? moment(videoData?.time).fromNow() : "---"}</p>
                         </section>
                     </section>
                 </div>
@@ -113,33 +175,36 @@ function VideoCard({ type, data }) {
                 {/* update model */}
                 <dialog id="my_modal_1" className="modal">
                     <div className="modal-box bg-white text-black  dark:bg-medium_black dark:text-white sm:max-w-[90vh] sm:max-h-[700vh] max-w-[90svh] max-h-[70svh]" >
+                        <ModelLoader data={updateLoader} />
                         <form method="dialog">
-                            {/* if there is a button in form, it will close the modal */}
                             <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                         </form>
                         <h1 className=' text-lg'>Edit Video Information</h1>
+                        <h1 className={`${editError ? "" : "hidden"} text-sm text-red-500`}>*All fileds are required</h1>
                         <div className='overflow-y-auto p-2'>
                             <form onSubmit={handleedit}>
-                                <label className=' text-sm'>Title:</label><br />
+                                <label className=' text-sm'>Title<span className=' text-red-500 text-xs'> *</span></label><br />
                                 <input value={title} onChange={(e) => {
+                                    seteditError(false)
                                     settitle(e.target.value)
                                 }} className=' px-3 py-[5px] rounded-lg bg-white dark:bg-light_black dark:border-none border w-[100%] focus:outline-none' type="text" id="title" name="title" /><br />
 
-                                <label className=' text-sm'>Description:</label><br />
+                                <label className=' text-sm'>Description<span className=' text-red-500 text-xs'> *</span></label><br />
                                 <textarea value={desc} onChange={(e) => {
+                                    seteditError(false)
                                     setdesc(e.target.value)
-                                }} className=' px-3 py-[5px] rounded-lg bg-white border dark:bg-light_black dark:border-none w-[100%] focus:outline-none' id="description" name="description" rows="4" cols="50"></textarea><br />
+                                }} className=' text-sm px-3 py-[5px] rounded-lg bg-white border dark:bg-light_black dark:border-none w-[100%] focus:outline-none' id="description" name="description" rows="7" cols="50"></textarea><br />
 
-                                <label className=' text-sm'>Thambnail Image</label><br />
+                                {/* <label className=' text-sm'>Thambnail Image</label><br />
                                 <div className="flex items-center justify-between w-full dark:bg-light_black dark:border-none bg-white border rounded-lg px-3 py-[5px] focus:outline-none">
                                     <label onClick={() => {
                                         imageRef.current.click();
                                     }} className="cursor-pointer flex items-center  gap-3 text-sm"><MdCloudUpload size={28} color=' gray' />Choose File</label>
                                 </div>
                                 <h1 className=' text-xs mt-1 text-gray-600'>{thumbnailName}</h1>
-                                <br />
+                                <br /> */}
 
-                                <label className=' text-sm'>Topics:</label><br />
+                                <label className=' text-sm'>Topics<span className=' text-red-500 text-xs'> *</span></label><br />
                                 <Multiselect
                                     style={{ borderWidth: '0px' }}
                                     selectedValues={selectedTopics}
@@ -148,6 +213,7 @@ function VideoCard({ type, data }) {
                                     onSelect={handleTopicSelect}
                                     onRemove={handleTopicSelect}
                                 />
+                                <h1 className=' text-xs mt-[2px] text-gray-500'>select topics for video</h1>
                                 <br />
 
                                 <button type="submit" className=' bg-red-500 rounded-lg  text-white px-4 py-[4px]' value="Submit">Edit</button>
@@ -160,6 +226,7 @@ function VideoCard({ type, data }) {
                 {/* delete model */}
                 <dialog id="my_modal_2" className="modal">
                     <div className="modal-box bg-white text-black  dark:bg-medium_black dark:text-white sm:max-w-[90vh] sm:max-h-[700vh] max-w-[90svh] max-h-[70svh]">
+                        <ModelLoader data={deleteLoader} />
                         <form method="dialog">
                             <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                         </form>
