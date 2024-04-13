@@ -10,6 +10,7 @@ import { BeatLoader } from 'react-spinners';
 import noData from '../../assets/noData.png';
 import { MoonLoader } from 'react-spinners'
 import ModelLoader from '../home/ModelLoader';
+import VideoCardSkeleton from '../loaders/VideoCardSkeleton';
 
 function YourChannel() {
     const [data, setdata] = useState();
@@ -44,6 +45,8 @@ function YourChannel() {
     const [videoLoader, setVideoLoader] = useState(false);
 
     const { userDetails, token, userDetailsLoader, setuserDetailsLoader } = AuthHook();
+
+    const [loader, setloader] = useState(false)
 
     const handleVideoChange = (e) => {
         setaddVideoError(false)
@@ -217,12 +220,14 @@ function YourChannel() {
     };
 
     const fetchData = async () => {
+        setloader(true)
         try {
             const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/channel/oneChannel/${userDetails?.channel}`);
             setdata(res.data.data);
         } catch (error) {
             console.error("Error fetching channel data:", error);
         }
+        setloader(false)
     };
 
     const getCategory = async () => {
@@ -266,7 +271,7 @@ function YourChannel() {
                             <section className='mt-2'>
                                 <h1 className='dark:text-white text-black'>Videos</h1>
                                 <div className='border-t border-gray-500 mt-1'></div>
-                                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4'>
+                                <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-4'>
                                     {data?.videos?.length === 0 ? (
                                         <div className='w-[90vw] flex justify-center items-center flex-col mt-[-15px]'>
                                             <img src={noData} className='w-40 h-40' alt="No data" />
@@ -277,6 +282,7 @@ function YourChannel() {
                                             <VideoCard type="your" key={index} data={item} />
                                         ))
                                     )}
+
                                 </div>
                             </section>
                         </div>

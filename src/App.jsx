@@ -16,6 +16,8 @@ import ChannelIndex from './components/channel/ChannelIndex';
 import YourChannel from './components/channel/YourChannel';
 import VideoIndex from './components/videos/VideoIndex';
 import useMain from './components/Context/MainContext';
+import Subscribed from './components/channel/Subscribed';
+import { LoaderProvider } from './components/Context/LoaderContext';
 
 
 function App() {
@@ -51,25 +53,28 @@ function App() {
   return (
     <div className='App font-poppins'>
       <AuthProvider>
-        <Router>
-          <ScrollToTop />
-          <Routes>
-            <Route path='/auth' element={<Auth />}>
-              <Route index element={<Login />} />
-              <Route path='login' element={<Login />} />
-              <Route path='signup' element={<Signup />} />
-              <Route path='area' element={<InterestedArea />} />
-            </Route>
-            <Route path='/' element={<Layout />}>
-              <Route index element={<Home />} />
-              <Route path='channel' element={<ChannelList />} />
-              <Route path='channel/:id' element={<ChannelIndex />} />
-              <Route path='yourchannel' element={<YourChannel />} />
-              <Route path='video/:id' element={<VideoIndex />} />
-              <Route path='test' element={<Test />} />
-            </Route>
-          </Routes>
-        </Router>
+        <LoaderProvider >
+          <Router>
+            <ScrollToTop />
+            <Routes>
+              <Route path='/auth' element={<Auth />}>
+                <Route index element={<Login />} />
+                <Route path='login' element={<Login />} />
+                <Route path='signup' element={<Signup />} />
+                <Route path='area' element={<InterestedArea />} />
+              </Route>
+              <Route path='/' element={<Layout />}>
+                <Route index element={<Home />} />
+                <Route path='channel' element={<ChannelList />} />
+                <Route path='channel/:id' element={<ChannelIndex />} />
+                <Route path='yourchannel' element={<YourChannel />} />
+                <Route path='video/:id' element={<VideoIndex />} />
+                <Route path='subscribed' element={<Subscribed />} />
+                <Route path='test' element={<Test />} />
+              </Route>
+            </Routes>
+          </Router>
+        </LoaderProvider>
       </AuthProvider>
       <Toaster />
     </div>

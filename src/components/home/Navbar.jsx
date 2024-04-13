@@ -15,42 +15,27 @@ import { FiUsers } from "react-icons/fi";
 import { useNavigate } from 'react-router-dom'
 
 function Navbar() {
-    const { userDetails, setuserDetails, token, setuserDetailsLoader, userDetailsLoader } = AuthHook()
+    const { userDetails, getUserDetails } = AuthHook()
     const { toggletheme, darkstate, setsidebarSize, sidebarSize, path, setpath } = useMain();
     const [searchShow, setsearchShow] = useState(false);
 
     const navigate = useNavigate()
 
-    const getUserDetails = async () => {
 
-        try {
-            const res = await axios.get("http://localhost:3000/api/auth/userDetails", {
-                headers: {
-                    "authentication": `bearer ${token}`
-                }
-            });
-            setuserDetails(res.data.data.data)
-        } catch (err) {
-            if (err.response.status == 401) {
-                setuserDetails(undefined)
-            }
-        }
-        console.log("settofalse");
-        setuserDetailsLoader(false)
-    }
     useEffect(() => {
         getUserDetails()
     }, [])
 
     return (
-        <div className=' dark:bg-dark_black bg-white flex justify-between items-center border-b dark:border-[#353333] p-2 h-[8svh] sm:h-[8vh] max-h-[8vh]'>
+        // <div className=' dark:bg-dark_black bg-white flex justify-between items-center border-b dark:border-[#353333] p-2 h-[8svh] sm:h-[8vh] max-h-[8vh]'>
+        <div className=' flex justify-between items-center border-b dark:border-[#353333] p-2 h-[8svh] sm:h-[8vh] max-h-[8vh]'>
             <section className={`${searchShow ? "flex" : "hidden"} flex justify-center items-center w-[100%] `}>
                 <section className=' w-[12%]'>
                     <IoArrowBackCircleOutline size={30} className='dark:text-white cursor-pointer text-black' onClick={() => { setsearchShow(false) }} />
                 </section>
                 <section className='  w-[88%]'>
                     <form className=' w-[100%] flex justify-center items-center'>
-                        <input className=' dark:bg-medium_black bg-bg_white  text-black rounded-full text-sm px-5 py-[4px] w-[100%] dark:text-text dark:border-none border focus:outline-none' placeholder='search' />
+                        <input className=' dark:bg-light_black bg-bg_white  text-black rounded-full text-sm px-5 py-[5px] w-[100%] dark:text-text dark:border-none border focus:outline-none' placeholder='search' />
                     </form>
                 </section>
             </section>
@@ -65,7 +50,7 @@ function Navbar() {
             </section>
             <section className={` hidden w-[60%] sm:block `}>
                 <form className=' w-[100%] flex justify-center items-center'>
-                    <input className=' dark:bg-medium_black bg-bg_white text-black rounded-full text-sm px-5 py-[4px] w-[90%] dark:text-text dark:border-none border focus:outline-none' placeholder='search' />
+                    <input className=' dark:bg-light_black bg-bg_white text-black rounded-full text-sm px-5 py-[5px] w-[90%] dark:text-text dark:border-none border focus:outline-none' placeholder='search' />
                 </form>
             </section>
             <section className={`${searchShow ? "hidden" : "flex"} w-[20%] justify-end gap-3 items-center `}>
@@ -74,14 +59,14 @@ function Navbar() {
                 </section>
                 <section>
                     {
-                        darkstate ? <MdOutlineLightMode size={27} className='dark:text-white cursor-pointer text-black' onClick={toggletheme} /> :
-                            <MdOutlineDarkMode size={27} className='dark:text-white cursor-pointer text-black' onClick={toggletheme} />
+                        darkstate ? <MdOutlineLightMode size={25} className='dark:text-white cursor-pointer text-black' onClick={toggletheme} /> :
+                            <MdOutlineDarkMode size={25} className='dark:text-white cursor-pointer text-black' onClick={toggletheme} />
                     }
 
                 </section>
                 <button onClick={() => {
                     navigate("/auth/login")
-                }} className={`${userDetails ? "hidden" : ""} bg-red-600 text-white px-5  py-[5px] rounded-3xl font-semibold dark:hover:bg-light_black hover:bg-black`}>Login</button>
+                }} className={`${userDetails ? "hidden" : ""} bg-red-600 text-white px-5 text-sm  py-[4px] rounded-3xl font-semibold dark:hover:bg-light_black hover:bg-black`}>Login</button>
                 <button className={`${userDetails ? "" : "hidden"} dark:text-text text-black`}>{userDetails?.username}</button>
             </section>
 
@@ -112,6 +97,14 @@ function Navbar() {
                     }} className={` ${path == "your" ? "bg-white dark:bg-light_black" : ""} hover:bg-bg_white dark:text-white dark:hover:bg-light_black text-black px-4 py-2 rounded-xl cursor-pointer flex items-center gap-4`}>
                         <FiUsers size={27} />
                         <h1 className={`text-md`}>your</h1>
+                    </section>
+                    <section onClick={() => {
+                        setpath("subscribed")
+                        navigate("/subscribed")
+                        setsidebarSize(false)
+                    }} className={` ${path == "subscribed" ? "bg-white dark:bg-light_black" : ""} hover:bg-bg_white dark:text-white dark:hover:bg-light_black text-black px-4 py-2 rounded-xl cursor-pointer flex items-center gap-4`}>
+                        <FiUsers size={27} />
+                        <h1 className={`text-md`}>Subscription</h1>
                     </section>
                 </div>
             </div>

@@ -18,6 +18,8 @@ export const MainProvider = ({ children }) => {
             window.location.pathname == "/channel" ? "channel" :
                 window.location.pathname == "/your" ? "your" : "home");
 
+    const [selectChannel, setselectChannel] = useState("all")
+
     const toggletheme = () => {
         if (darkstate) {
             localStorage.setItem('theme', 'white');
@@ -36,7 +38,9 @@ export const MainProvider = ({ children }) => {
         sidebarSize,
         setsidebarSize,
         path,
-        setpath
+        setpath,
+        setselectChannel,
+        selectChannel
     }
     return <MainContext.Provider value={value}>{children}</MainContext.Provider>
 }

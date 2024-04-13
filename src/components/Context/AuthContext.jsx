@@ -27,6 +27,23 @@ export const AuthProvider = ({ children }) => {
     //     refreshToken();
     // }, [])
 
+    const getUserDetails = async () => {
+
+        try {
+            const res = await axios.get("http://localhost:3000/api/auth/userDetails", {
+                headers: {
+                    "authentication": `bearer ${token}`
+                }
+            });
+            setuserDetails(res.data.data.data)
+        } catch (err) {
+            if (err.response.status == 401) {
+                setuserDetails(undefined)
+            }
+        }
+        setuserDetailsLoader(false)
+    }
+
 
     const value = {
         formdata,
@@ -36,7 +53,8 @@ export const AuthProvider = ({ children }) => {
         userDetails,
         setuserDetails,
         userDetailsLoader,
-        setuserDetailsLoader
+        setuserDetailsLoader,
+        getUserDetails
     }
     return <AuthContext.Provider value={value}>
         {children}
