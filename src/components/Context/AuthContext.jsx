@@ -7,8 +7,9 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     const [formdata, setformdata] = useState();
     const [token, settoken] = useState(Cookies.get("token") ? Cookies.get("token") : undefined)
-    const [userDetails, setuserDetails] = useState({})
-    const [userDetailsLoader, setuserDetailsLoader] = useState(true);
+    const [userDetails, setuserDetails] = useState()
+    const [userDetailsLoader, setuserDetailsLoader] = useState(false);
+    const [islogedIn, setislogedIn] = useState(Cookies.get("token") ? true : false)
 
     // const refreshToken = async (teq, res) => {
     //     if (Cookies.get("token")) {
@@ -29,19 +30,23 @@ export const AuthProvider = ({ children }) => {
 
     const getUserDetails = async () => {
 
-        try {
-            const res = await axios.get("http://localhost:3000/api/auth/userDetails", {
-                headers: {
-                    "authentication": `bearer ${token}`
+        if (islogedIn) {
+            setuserDetailsLoader(true)
+            try {
+                const res = await axios.get("http://localhost:3000/api/auth/userDetails", {
+                    headers: {
+                        "authentication": `bearer ${token}`
+                    }
+                });
+                setuserDetails(res.data.data.data)
+            } catch (err) {
+                if (err.response.status == 401) {
+                    setuserDetails(undefined)
                 }
-            });
-            setuserDetails(res.data.data.data)
-        } catch (err) {
-            if (err.response.status == 401) {
-                setuserDetails(undefined)
             }
         }
         setuserDetailsLoader(false)
+
     }
 
 
@@ -54,7 +59,9 @@ export const AuthProvider = ({ children }) => {
         setuserDetails,
         userDetailsLoader,
         setuserDetailsLoader,
-        getUserDetails
+        getUserDetails,
+        setislogedIn,
+        islogedIn
     }
     return <AuthContext.Provider value={value}>
         {children}

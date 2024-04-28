@@ -16,9 +16,13 @@ export const MainProvider = ({ children }) => {
     const [path, setpath] = useState(window.location.pathname == "/" ? "home" :
         window.location.pathname == "/home" ? "home" :
             window.location.pathname == "/channel" ? "channel" :
-                window.location.pathname == "/your" ? "your" : "home");
+                window.location.pathname == "/your" ? "your" : window.location.pathname == "/subscribed" ? "subscribers" : "home");
 
     const [selectChannel, setselectChannel] = useState("all")
+    const [selectedTpic, setselectedTpic] = useState("all")
+    const [data, setdata] = useState([]);
+    const [loading, setloading] = useState(false);
+    const [search, setsearch] = useState("")
 
     const toggletheme = () => {
         if (darkstate) {
@@ -40,7 +44,15 @@ export const MainProvider = ({ children }) => {
         path,
         setpath,
         setselectChannel,
-        selectChannel
+        selectChannel,
+        selectedTpic,
+        setselectedTpic,
+        data,
+        setdata,
+        loading,
+        setloading,
+        search,
+        setsearch
     }
     return <MainContext.Provider value={value}>{children}</MainContext.Provider>
 }

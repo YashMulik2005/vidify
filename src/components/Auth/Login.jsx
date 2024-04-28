@@ -11,7 +11,7 @@ import { useState } from 'react';
 function Login() {
     const { register, handleSubmit, formState: { errors } } = useForm();
     const navigate = useNavigate();
-    const { settoken } = AuthHook()
+    const { settoken, setislogedIn } = AuthHook()
     const [loader, setloader] = useState(false)
 
     const onSubmit = async (data, e) => {
@@ -22,6 +22,7 @@ function Login() {
         if (res.data.data.status) {
             cookies.set("token", res.data.data.token, { expires: 4 })
             settoken(cookies.get("token"))
+            setislogedIn(true);
             navigate("/")
         }
         else {

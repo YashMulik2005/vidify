@@ -4,11 +4,12 @@ import { PulseLoader } from 'react-spinners'
 import { HashLoader } from 'react-spinners'
 import AuthHook from '../Context/AuthContext'
 import TopicSkeleton from '../loaders/TopicSkeleton'
+import useMain from '../Context/MainContext'
 
 function Topics() {
     const [dataloader, setdataloader] = useState(false)
     const [category, setcategory] = useState([]);
-    const [selectedTpic, setselectedTpic] = useState("all")
+    const { selectedTpic, setselectedTpic } = useMain();
 
     const getCategory = async () => {
         setdataloader(true)
@@ -33,11 +34,11 @@ function Topics() {
                 </section>
             ) : (
                 <>
-                    <span onClick={() => setselectedTpic("all")} className={`${selectedTpic === "all" ? "bg-red-500 text-white dark:bg-white dark:text-black" : "dark:bg-light_black bg-white dark:text-white text-black"} select-none whitespace-nowrap rounded-lg mx-[5px] px-3 py-1`}>
+                    <span onClick={() => setselectedTpic("all")} className={`${selectedTpic === "all" ? "bg-red-500 text-white dark:bg-white dark:text-black" : "dark:bg-light_black bg-white dark:text-white text-black"} select-none whitespace-nowrap rounded-lg mx-[5px] px-3 py-1 cursor-pointer`}>
                         All
                     </span>
                     {category?.map((item, index) => (
-                        <span key={index} onClick={() => handleTopic(item._id)} className={`${selectedTpic === item._id ? "bg-red-500 text-white dark:bg-white dark:text-black" : "dark:bg-light_black dark:text-white bg-white text-black"} select-none whitespace-nowrap rounded-lg mx-[5px] px-3 py-1`}>
+                        <span key={index} onClick={() => handleTopic(item._id)} className={`${selectedTpic === item._id ? "bg-red-500 text-white dark:bg-white dark:text-black" : "dark:bg-light_black dark:text-white bg-white text-black"} select-none whitespace-nowrap rounded-lg mx-[5px] px-3 py-1 cursor-pointer`}>
                             {item.name}
                         </span>
                     ))}

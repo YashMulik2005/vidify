@@ -6,10 +6,11 @@ import AuthHook from '../Context/AuthContext';
 import { MoonLoader } from 'react-spinners'
 
 function Layout() {
-    const { setuserDetailsLoader, userDetailsLoader } = AuthHook()
+    const { userDetailsLoader } = AuthHook()
     return (
+        // 113853
         <div className='relative '>
-            <div className='absolute inset-0 bg-gradient-to-tr dark:from-[#000000] dark:via-[#12100E] dark:to-[#04619F] from-[#fafaff] via-[#fafaff] to-[#04619F]   blur-sm ' ></div>
+            <div className='absolute inset-0 bg-gradient-to-tr dark:from-[#121e26] dark:via-[#12100E] dark:to-[#113853] from-[#c6deef] via-[#e8e8ec] to-[#a9d0eb]   blur-sm ' ></div>
             <div className='relative z-10'>
                 <div><Navbar /></div>
                 <div className=' h-[92svh] sm:h-[92vh] max-h-[92vh] grid grid-cols-1 sm:grid-cols-[80px_auto]'>

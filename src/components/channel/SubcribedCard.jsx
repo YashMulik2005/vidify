@@ -11,7 +11,7 @@ function SubcribedCard({ data }) {
 
     const getdata = async () => {
         setloader(true)
-        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/channel/oneChannel/${data}`)
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/channel/subscribed/${data}`)
         setchannelData(res.data.data)
         setloader(false)
     }

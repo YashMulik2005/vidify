@@ -17,7 +17,8 @@ import YourChannel from './components/channel/YourChannel';
 import VideoIndex from './components/videos/VideoIndex';
 import useMain from './components/Context/MainContext';
 import Subscribed from './components/channel/Subscribed';
-import { LoaderProvider } from './components/Context/LoaderContext';
+import Profile from './components/home/Profile';
+import WatchHistroy from './components/home/WatchHistroy';
 
 
 function App() {
@@ -32,49 +33,48 @@ function App() {
   }, [darkstate]);
 
 
-  NProgress.configure({ showSpinner: false });
+  // NProgress.configure({ showSpinner: false });
 
-  const ScrollToTop = () => {
-    const location = useLocation();
+  // const ScrollToTop = () => {
+  //   const location = useLocation();
 
-    useEffect(() => {
-      NProgress.start();
+  //   useEffect(() => {
+  //     NProgress.start();
 
-      const timeout = setTimeout(() => {
-        NProgress.done();
-      }, 500);
+  //     const timeout = setTimeout(() => {
+  //       NProgress.done();
+  //     }, 500);
 
-      return () => clearTimeout(timeout);
-    }, [location]);
+  //     return () => clearTimeout(timeout);
+  //   }, [location]);
 
-    return null;
-  };
+  //   return null;
+  // };
 
   return (
     <div className='App font-poppins'>
       <AuthProvider>
-        <LoaderProvider >
-          <Router>
-            <ScrollToTop />
-            <Routes>
-              <Route path='/auth' element={<Auth />}>
-                <Route index element={<Login />} />
-                <Route path='login' element={<Login />} />
-                <Route path='signup' element={<Signup />} />
-                <Route path='area' element={<InterestedArea />} />
-              </Route>
-              <Route path='/' element={<Layout />}>
-                <Route index element={<Home />} />
-                <Route path='channel' element={<ChannelList />} />
-                <Route path='channel/:id' element={<ChannelIndex />} />
-                <Route path='yourchannel' element={<YourChannel />} />
-                <Route path='video/:id' element={<VideoIndex />} />
-                <Route path='subscribed' element={<Subscribed />} />
-                <Route path='test' element={<Test />} />
-              </Route>
-            </Routes>
-          </Router>
-        </LoaderProvider>
+        <Router>
+          <Routes>
+            <Route path='/auth' element={<Auth />}>
+              <Route index element={<Login />} />
+              <Route path='login' element={<Login />} />
+              <Route path='signup' element={<Signup />} />
+              <Route path='area' element={<InterestedArea />} />
+            </Route>
+            <Route path='/' element={<Layout />}>
+              <Route index element={<Home />} />
+              <Route path='channel' element={<ChannelList />} />
+              <Route path='channel/:id' element={<ChannelIndex />} />
+              <Route path='yourchannel' element={<YourChannel />} />
+              <Route path='video/:id' element={<VideoIndex />} />
+              <Route path='subscribed' element={<Subscribed />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="watchHistroy" element={<WatchHistroy />} />
+              <Route path='test' element={<Test />} />
+            </Route>
+          </Routes>
+        </Router>
       </AuthProvider>
       <Toaster />
     </div>
