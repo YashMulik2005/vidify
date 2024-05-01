@@ -99,7 +99,7 @@ function Navbar() {
                 </section>
             </section>
 
-            <section className={`${searchShow ? "hidden" : "flex"} w-[20%] justify-end gap-3 items-center `}>
+            <section className={`${searchShow ? "hidden" : "flex"} w-[20%] justify-end gap-2 items-center `}>
                 <section className=' sm:hidden'>
                     <BsSearch size={23} className='dark:text-white cursor-pointer text-black' onClick={() => setsearchShow(true)} />
                 </section>
@@ -114,7 +114,7 @@ function Navbar() {
                     navigate("/auth/login")
                 }} className={`${islogedIn ? "hidden" : ""} bg-gradient-to-tr via-[#FF0000] from-[#FF0000] to-[#c10505]  text-white px-5 text-sm  py-[4px] rounded-3xl font-semibold dark:hover:bg-light_black hover:bg-black`}>Login</button>
                 <section className=' relative mr-4'>
-                    <button onClick={() => setuserModel(true)} className={`${userDetails ? "" : "hidden"} dark:text-text text-black`} >{userDetails?.username}</button>
+                    <button onClick={() => setuserModel(true)} className={`${userDetails ? "" : "hidden"} dark:text-text text-xs text-black`} >{userDetails?.username}</button>
                     <div className={` ${userModel ? "block" : "hidden"} absolute dark:bg-medium_black bg-bg_white dark:text-white text-black w-28 z-30 mt-2 right-0 rounded-lg p-2 px-3`}>
                         <section className=' flex justify-end '>
                             <RxCross1 className='float-right cursor-pointer' size={18} onClick={() => setuserModel(false)} />

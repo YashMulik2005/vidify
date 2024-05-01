@@ -17,7 +17,7 @@ function Login() {
     const onSubmit = async (data, e) => {
         e.preventDefault();
         setloader(true)
-        const res = await axios.post("http://localhost:3000/api/auth/login", { username: data.username, password: data.password })
+        const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/auth/login`, { username: data.username, password: data.password })
         console.log(res);
         if (res.data.data.status) {
             cookies.set("token", res.data.data.token, { expires: 4 })

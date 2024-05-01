@@ -27,14 +27,14 @@ function InterestedArea() {
 
     const getCategory = async () => {
         setdataloader(true)
-        const res = await axios.get("http://localhost:3000/api/category/getCategory")
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/category/getCategory`)
         setcategory(res.data.data.category)
         setdataloader(false)
     }
 
     const handleSignup = async () => {
         setloader(true)
-        const res = await axios.post("http://localhost:3000/api/auth/signup", {
+        const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/auth/signup`, {
             fname: formdata.fname,
             lname: formdata.lname,
             username: formdata.username,
