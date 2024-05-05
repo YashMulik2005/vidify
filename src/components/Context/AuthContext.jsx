@@ -33,19 +33,20 @@ export const AuthProvider = ({ children }) => {
         if (islogedIn) {
             setuserDetailsLoader(true)
             try {
-                const res = await axios.get("http://localhost:3000/api/auth/userDetails", {
+                const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/auth/userDetails`, {
                     headers: {
                         "authentication": `bearer ${token}`
                     }
                 });
                 setuserDetails(res.data.data.data)
+                setuserDetailsLoader(false)
             } catch (err) {
                 if (err.response.status == 401) {
                     setuserDetails(undefined)
                 }
+                setuserDetailsLoader(false)
             }
         }
-        setuserDetailsLoader(false)
 
     }
 
