@@ -13,7 +13,7 @@ function RelatedVideoCard({ data }) {
                 <img className='rounded-lg aspect-video w-full' src={data?.thumbnail} />
             </section>
             <section className=' w-[60%] pl-2'>
-                <h1 className=' text-black dark:text-white line-clamp-2'>{data.title}</h1>
+                <h1 className=' text-black dark:text-white line-clamp-2 text-sm'>{data.title}</h1>
                 <p className=' text-gray-500 text-sm'>{data.channel.name}</p>
                 <section className=' flex text-gray-500 text-xs mt-1 justify-between'>
                     <p>{data?.views} views</p>

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import logo from "../../assets/channellogo.png"
+import React, { useEffect, useRef, useState } from 'react'
+import logo from "../../assets/user_default.png"
 import axios from 'axios'
 import AuthHook from '../Context/AuthContext'
 import VideoCard from '../videos/VideoCard';
@@ -10,6 +10,7 @@ import { MdOutlineEdit } from "react-icons/md";
 import toast from 'react-hot-toast';
 import { BeatLoader } from 'react-spinners'
 import { IoIosCamera } from "react-icons/io";
+import { HashLoader } from 'react-spinners'
 
 function Profile() {
     const { token } = AuthHook();
@@ -20,6 +21,12 @@ function Profile() {
     const [category, setcategory] = useState();
     const [selectedTopic, setselectedTopic] = useState()
     const [categoryLoader, setcategoryLoader] = useState()
+    const [profile, setProfile] = useState()
+    const [previewUrl, setPreviewUrl] = useState(null);
+    const profileRef = useRef(null);
+    const [upadateloader, setupadateloader] = useState(false);
+    const [search, setsearch] = useState(null);
+    const [topicLoader, settopicLoader] = useState(false)
 
     const getUserData = async () => {
         setloading(true)
@@ -71,15 +78,63 @@ function Profile() {
     }
 
     const getCategory = async () => {
-        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/category/getCategory`)
+        settopicLoader(true)
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/category/getCategory?search${search !== null && search !== "" ? "=" + search : "="}`)
         setcategory(res.data.data.category)
+        settopicLoader(false)
     }
+
+    const handleProfileChange = (e) => {
+        const selectedFile = e.target.files[0]
+        setProfile(selectedFile);
+        if (selectedFile) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                setPreviewUrl(reader.result);
+            };
+            reader.readAsDataURL(selectedFile);
+        }
+        document.getElementById('previewModal').showModal()
+    };
+
+    const updateProfile = async () => {
+        try {
+            setupadateloader(true);
+            const profilelData = new FormData();
+            profilelData.append("file", profile);
+            profilelData.append("upload_preset", "vidify_image_preset");
+            const profileRes = await axios.post(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUD_NAME}/image/upload`, profilelData);
+            const profileUrl = profileRes.data.secure_url;
+            console.log(profileUrl);
+
+            const res = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/auth/updateProfile`, {
+                profile: profileUrl
+            }, {
+                headers: {
+                    authentication: `bearer ${token}`
+                }
+            })
+            if (res.status) {
+                toast.success("profile photo updated sucessfully..")
+                document.getElementById('previewModal').close()
+                window.location.reload();
+            }
+        } catch (err) {
+            console.log(err);
+            toast.error("somthing went wrong try again..")
+        }
+        setupadateloader(false);
+    }
+
 
     useEffect(() => {
         getUserData();
         getHistory();
-        getCategory();
     }, [])
+
+    useEffect(() => {
+        getCategory()
+    }, [search])
 
 
     return (
@@ -88,10 +143,13 @@ function Profile() {
                 loading ? <ProfileSkeleton /> :
                     <section>
                         <section className=' flex justify-between sm:pr-10 py-3'>
-                            <div className=' flex gap-3 items-center w-[60%]'>
+                            <div className=' flex gap-3 items-center sm:w-[60%]'>
                                 <section className=' relative '>
-                                    <img src={logo} className=' w-28 h-28' />
-                                    <section className='absolute bottom-2 cursor-pointer right-2 dark:bg-black bg-bg_white rounded-full p-1'><IoIosCamera color='dark:white black' size={20} /></section>
+                                    <img src={userData?.profile_image ? userData.profile_image : logo} className=' w-28 h-28 rounded-full' />
+                                    <section onClick={() => {
+                                        profileRef.current.click()
+                                    }} className='absolute bottom-2 cursor-pointer right-2 dark:bg-black bg-bg_white rounded-full p-1'><IoIosCamera color='dark:white black' size={20} /></section>
+                                    <input ref={profileRef} type="file" id="profile" name="profile" className="hidden absolute inset-0" accept="image/*" onChange={handleProfileChange} />
                                 </section>
                                 <section>
                                     <h1 className=' font-semibold text-xl dark:text-white text-black'>{userData?.username}</h1>
@@ -109,10 +167,10 @@ function Profile() {
                                         <img src={userData?.channel?.profile_image} className=' w-16 h-16 rounded-full' />
                                         <section>
                                             <h2 className='dark:text-white text-black font-semibold'>{userData?.channel?.name}</h2>
-                                            <p className='dark:text-gray-500 text-gray-600'>{userData?.channel?.subscribers?.length} subscribers</p>
+                                            <p className='dark:text-gray-500 text-gray-600 text-sm'>{userData?.channel?.subscribers?.length} {userData?.channel?.subscribers?.length > 1 || userData?.channel?.subscribers?.length == 0 ? "subscribers" : "subscriber"}</p>
                                             <button onClick={() => {
                                                 Navigate(`/channel/${userData?.channel?._id}`)
-                                            }} className={`bg-gradient-to-tr my-1 via-[#FF0000] from-[#FF0000] to-[#c10505] text-white px-5 text-xs  py-[4px] rounded-3xl font-semibold dark:hover:bg-light_black hover:bg-black`}>View Channel</button>
+                                            }} className={`bg-gradient-to-tr my-1 via-[#FF0000] from-[#FF0000] to-[#c10505] text-white px-5 text-xs  py-[4px] rounded-3xl  dark:hover:bg-light_black hover:bg-black`}>View Channel</button>
                                         </section>
                                     </section>
                                 </div>}
@@ -161,18 +219,55 @@ function Profile() {
                         <button className="btn btn-md btn-circle btn-ghost text-lg absolute right-2 top-2">✕</button>
                     </form>
                     <h1 className=''>Edit Interested Area</h1>
+                    <div className=' w-[100%] flex justify-center items-center gap-1'>
+                        <input type='text' value={search} onChange={(e) => {
+                            setsearch(e.target.value)
+                        }
+                        } placeholder='search' className='border text-sm dark:bg-light_black bg-bg_white text-black dark:text-white rounded-3xl px-3 py-[5px] dark:border-none w-[100%] my-2 focus:outline-none' />
+                    </div>
                     {categoryLoader ? <div className=' h-[60vh] flex justify-center items-center flex-col gap-2'> <BeatLoader color=' red' />updating</div> :
                         <div className='overflow-y-auto p-2'>
                             <form className='flex flex-wrap gap-2 justify-center items-center h-[60vh] max-h-[60vh] overflow-y-scroll p-2'>
                                 {
-                                    category?.map((item) => {
-                                        return <section onClick={() => select_area(item)} key={item._id} className={`${selectedTopic?.includes(item._id) ? "bg-red-600 text-white" : " bg-red-100 dark:bg-red-300"} cursor-pointer px-3 text-sm rounded-xl py-[3px]`}>{item.name}</section>
-                                    })
+                                    topicLoader ? <HashLoader color='red' /> :
+                                        category?.length == 0 ? <div className='flex justify-center items-center flex-col'>
+                                            <img src={noData} className=' w-40 h-40' alt="No data" />
+                                            <h1 className='dark:text-white text-black'>No video Found</h1>
+                                        </div> :
+                                            category?.map((item) => {
+                                                return <section onClick={() => select_area(item)} key={item._id} className={`${selectedTopic?.includes(item._id) ? "bg-red-600 text-white" : " bg-red-100 dark:bg-red-300"} cursor-pointer px-3 text-sm rounded-xl py-[3px]`}>{item.name}</section>
+                                            })
                                 }
                             </form>
                             <button onClick={handleTopicEdit} type='submit' className='bg-red-500 rounded-lg cursor-pointer text-white px-4 py-[4px] text-sm'>Edit</button>
                         </div>
                     }
+                </div>
+            </dialog>
+
+            <dialog id="previewModal" className="modal">
+                <div className="modal-box bg-white text-black dark:bg-medium_black dark:text-white sm:max-w-[50vh] sm:max-h-[85vh] max-w-[80svh] max-h-[85svh]">
+                    {
+                        upadateloader ? <div className=' h-[35vh] flex justify-center items-center flex-col gap-2'><BeatLoader color='red' /></div> :
+                            <div>
+                                <h1 className=' mb-1'>Image Preview</h1>
+                                <div>
+                                    {previewUrl && <img src={previewUrl} className=' w-28 h-28 rounded-full m-auto border ' alt="Preview" />}
+                                </div>
+                                <div className=' flex justify-end gap-2 mt-3'>
+                                    <button onClick={updateProfile} className='hover:bg-red-700 dark:hover:bg-red-700 dark:hover:text-white text-xs hover:text-white px-3 py-[4px] rounded-lg dark:bg-gray-800 bg-gray-200 text-black dark:text-white'>Set Image</button>
+                                    <button onClick={(e) => {
+                                        e.stopPropagation();
+                                        setProfile(null);
+                                        setPreviewUrl(null);
+                                        profileRef.current.value = "";
+                                        document.getElementById('previewModal').close()
+                                    }
+                                    } className='dark:hover:bg-red-700 text-xs dark:hover:text-white hover:bg-red-700 hover:text-white px-3 py-[4px] rounded-lg dark:bg-gray-800 bg-gray-200 text-black dark:text-white'>Cancel</button>
+                                </div>
+                            </div>
+                    }
+
                 </div>
             </dialog>
         </div>

@@ -16,6 +16,8 @@ import { useNavigate } from 'react-router-dom'
 import { RiMapPinUserFill } from "react-icons/ri";
 import cookies from 'js-cookie'
 import { IoIosLogOut } from "react-icons/io";
+import { MdHistory } from "react-icons/md";
+import logo from "../../assets/user_default.png"
 
 function Navbar() {
     const { userDetails, getUserDetails, islogedIn, setislogedIn, setuserDetails, settoken, } = AuthHook()
@@ -23,6 +25,7 @@ function Navbar() {
     const [searchShow, setsearchShow] = useState(false);
     const [userModel, setuserModel] = useState(false)
     const [searchSuggest, setsearchSuggest] = useState()
+    console.log(userDetails);
 
     const navigate = useNavigate()
     const handlelogout = () => {
@@ -30,24 +33,22 @@ function Navbar() {
         settoken(null);
         setislogedIn(false);
         setuserDetails(null);
-        window.location.reload();
         navigate("/")
+        window.location.reload();
     }
 
-    const handleSuggest = async (e) => {
-        setsearch(e.target.value);
+    const handleSuggest = async () => {
         const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/video/suggestSearch`, {
             search: search
         })
         setsearchSuggest(res.data.response);
     }
 
-    const handlesearch = async (e) => {
-        e.preventDefault();
+    const handlesearch = async () => {
         setsearchSuggest([]);
         setloading(true)
         const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/video/search`, {
-            search: search
+            search: search == null ? "" : search
         })
         console.log(res.data.response.data);
         setdata(res.data.response.data);
@@ -61,18 +62,47 @@ function Navbar() {
         }
     }, [])
 
+    useEffect(() => {
+        handleSuggest();
+    }, [search])
+
+    useEffect(() => {
+        if (search === "") {
+            handlesearch()
+        }
+    }, [search == ""])
+
     return (
         // <div className=' dark:bg-dark_black bg-white flex justify-between items-center border-b dark:border-[#353333] p-2 h-[8svh] sm:h-[8vh] max-h-[8vh]'>
         <div className=' flex justify-between items-center border-b dark:border-[#353333] p-2 h-[8svh] sm:h-[8vh] max-h-[8vh]'>
             <section className={`${searchShow ? "flex" : "hidden"} flex justify-center items-center w-[100%] `}>
                 <section className=' w-[12%]'>
-                    <IoArrowBackCircleOutline size={30} className='dark:text-white cursor-pointer text-black' onClick={() => { setsearchShow(false) }} />
+                    <IoArrowBackCircleOutline size={25} className='dark:text-white cursor-pointer text-black' onClick={() => { setsearchShow(false) }} />
                 </section>
-                <section className='w-[88%] '>
-                    <form className=' w-[100%] flex justify-center items-center'>
-                        <input className=' dark:bg-light_black bg-bg_white  text-black rounded-full text-sm px-5 py-[5px] w-[100%] dark:text-text dark:border-none border focus:outline-none' placeholder='search' />
+                <section className='w-[88%] relative'>
+                    <form onSubmit={(e) => {
+                        e.preventDefault();
+                        handlesearch()
+                    }} className=' w-[100%] flex justify-center items-center'>
+                        <input onChange={() => setsearch(e.target.value)} className=' dark:bg-light_black bg-bg_white  text-black rounded-full text-sm px-5 py-[5px] w-[100%] dark:text-text dark:border-none border focus:outline-none' placeholder='search' />
                     </form>
-
+                    <section className={`z-30 w-[100%] flex justify-center items-center max-h-80 overflow-y-auto absolute mt-1 ${search === "" || searchSuggest?.length === 0 ? "hidden" : ""}`}>
+                        <div className='dark:bg-light_black w-[100%] max-h-80
+                     p-3 text-sm rounded-lg overflow-y-auto'>
+                            {
+                                searchSuggest?.map((item, index) => (
+                                    <div key={index} className=' line-clamp-1 my-[8px] text-black dark:text-white flex items-center gap-3'>
+                                        <section className='w-[8%]'>
+                                            <MdHistory size={20} />
+                                        </section>
+                                        <section className='w-[92%]'>
+                                            {item.title}
+                                        </section>
+                                    </div>
+                                ))
+                            }
+                        </div>
+                    </section>
                 </section>
             </section>
             <section className={`${searchShow ? "hidden" : "flex"} justify-start items-center gap-3 w-[20%]`}>
@@ -85,14 +115,18 @@ function Navbar() {
                 </section>
             </section>
             <section className={`hidden w-[60%] sm:block relative`}>
-                <form onSubmit={handlesearch} className='w-[100%] flex justify-center items-center'>
-                    <input onChange={handleSuggest} value={search} className='dark:bg-light_black bg-bg_white text-black rounded-full text-sm px-5 py-[5px] w-[90%] dark:text-text dark:border-none border focus:outline-none' placeholder='search' />
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    handlesearch()
+                }} className='w-[100%] flex justify-center items-center'>
+                    <input onChange={() => setsearch(e.target.value)} value={search} className='dark:bg-light_black bg-bg_white text-black rounded-full text-sm px-5 py-[5px] w-[90%] dark:text-text dark:border-none border focus:outline-none' placeholder='search' />
                 </form>
-                <section className={`z-30 w-[100%] flex justify-center items-center max-h-48 overflow-y-auto absolute mt-1 ${search === "" || searchSuggest?.length === 0 ? "hidden" : ""}`}>
-                    <div className='dark:bg-light_black w-[90%] max-h-48 p-2 text-sm rounded-lg overflow-y-auto'>
+                <section className={`z-30 w-[100%] flex justify-center items-center max-h-80 overflow-y-auto absolute mt-1 ${search === null || searchSuggest?.length === 0 ? "hidden" : ""}`}>
+                    <div className='dark:bg-light_black w-[90%] max-h-80
+                     p-3 text-sm rounded-lg overflow-y-auto'>
                         {
                             searchSuggest?.map((item, index) => (
-                                <h1 key={index} className=' line-clamp-1'>{item.title}</h1>
+                                <h1 key={index} className=' line-clamp-1 my-[8px] text-black dark:text-white flex items-center gap-3'><MdHistory size={20} />{item.title}</h1>
                             ))
                         }
                     </div>
@@ -105,8 +139,8 @@ function Navbar() {
                 </section>
                 <section>
                     {
-                        darkstate ? <MdOutlineLightMode size={25} className='dark:text-white cursor-pointer text-black' onClick={toggletheme} /> :
-                            <MdOutlineDarkMode size={25} className='dark:text-white cursor-pointer text-black' onClick={toggletheme} />
+                        darkstate ? <MdOutlineLightMode size={22} className='dark:text-white cursor-pointer text-black' onClick={toggletheme} /> :
+                            <MdOutlineDarkMode size={22} className='dark:text-white cursor-pointer text-black' onClick={toggletheme} />
                     }
 
                 </section>
@@ -114,7 +148,7 @@ function Navbar() {
                     navigate("/auth/login")
                 }} className={`${islogedIn ? "hidden" : ""} bg-gradient-to-tr via-[#FF0000] from-[#FF0000] to-[#c10505]  text-white px-5 text-sm  py-[4px] rounded-3xl font-semibold dark:hover:bg-light_black hover:bg-black`}>Login</button>
                 <section className=' relative mr-4'>
-                    <button onClick={() => setuserModel(true)} className={`${userDetails ? "" : "hidden"} dark:text-text text-xs text-black`} >{userDetails?.username}</button>
+                    <img onClick={() => setuserModel(true)} className={`${userDetails ? "" : "hidden"} h-10 w-10 rounded-3xl cursor-pointer `} src={userDetails?.profile_image ? userDetails.profile_image : logo} />
                     <div className={` ${userModel ? "block" : "hidden"} absolute dark:bg-medium_black bg-bg_white dark:text-white text-black w-28 z-30 mt-2 right-0 rounded-lg p-2 px-3`}>
                         <section className=' flex justify-end '>
                             <RxCross1 className='float-right cursor-pointer' size={18} onClick={() => setuserModel(false)} />

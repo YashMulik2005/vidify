@@ -16,6 +16,9 @@ import { MdOutlineVideoLibrary, MdSupervisorAccount } from "react-icons/md";
 import { PiShareFatLight } from "react-icons/pi";
 import ChannelSkeleton from '../loaders/ChannelSkeleton';
 import Unauthorized from '../../errors/Unauthorized';
+import { IoIosCamera } from "react-icons/io";
+import InfiniteScroll from 'react-infinite-scroll-component';
+import VideoCardSkeleton from '../loaders/VideoCardSkeleton';
 
 function YourChannel() {
     const [data, setdata] = useState();
@@ -52,6 +55,104 @@ function YourChannel() {
     const { userDetails, token, setuserDetailsLoader, islogedIn } = AuthHook();
 
     const [loader, setloader] = useState(false)
+    //edit channel states
+    const channelProfileRef = useRef(null)
+    const channelBannerRef = useRef(null)
+    const [channelProfileEdit, setchannelProfileEdit] = useState()
+    const [channelBannerEdit, setchannelBannerEdit] = useState()
+    const [channelProfilePreviewURL, setchannelProfilePreviewURL] = useState(null)
+    const [channelBannerPreviewURL, setchannelBannerPreviewURL] = useState(null)
+    const [editloader, seteditloader] = useState()
+
+    //video data states
+    const [videoData, setvideoData] = useState()
+    const [currentPage, setcurrentPage] = useState(0)
+    const [moreData, setmoreData] = useState(false)
+
+    const handleChannelProfileEdit = (e) => {
+        const selectedFile = e.target.files[0]
+        setchannelProfileEdit(selectedFile);
+        if (selectedFile) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                setchannelProfilePreviewURL(reader.result);
+            };
+            reader.readAsDataURL(selectedFile);
+        }
+        document.getElementById('profilePreviewModal').showModal()
+    };
+    const handleChannelBannerEdit = (e) => {
+        const selectedFile = e.target.files[0]
+        setchannelBannerEdit(selectedFile);
+        if (selectedFile) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                setchannelBannerPreviewURL(reader.result);
+            };
+            reader.readAsDataURL(selectedFile);
+        }
+        document.getElementById('BannerPreviewModal').showModal()
+    };
+
+    const updateChannelProfile = async () => {
+        try {
+            seteditloader(true);
+            const profilelData = new FormData();
+            profilelData.append("file", channelProfileEdit);
+            profilelData.append("upload_preset", "vidify_image_preset");
+            const profileRes = await axios.post(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUD_NAME}/image/upload`, profilelData);
+            const profileUrl = profileRes.data.secure_url;
+            console.log(profileUrl);
+
+            const res = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/channel/updateProfile`, {
+                profile: profileUrl,
+                channelId: userDetails?.channel
+            }, {
+                headers: {
+                    authentication: `bearer ${token}`
+                }
+            })
+            if (res.status) {
+                toast.success("profile photo updated sucessfully..")
+                document.getElementById('profilePreviewModal').close()
+                window.location.reload();
+            }
+        } catch (err) {
+            console.log(err);
+            toast.error("somthing went wrong try again..")
+        }
+        seteditloader(false);
+    }
+
+    const updateChannelBanner = async () => {
+        try {
+            seteditloader(true);
+            const profilelData = new FormData();
+            profilelData.append("file", channelBannerEdit);
+            profilelData.append("upload_preset", "vidify_image_preset");
+            const profileRes = await axios.post(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUD_NAME}/image/upload`, profilelData);
+            const profileUrl = profileRes.data.secure_url;
+            console.log(profileUrl);
+
+            const res = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/channel/updateBanner`, {
+                banner: profileUrl,
+                channelId: userDetails?.channel
+            }, {
+                headers: {
+                    authentication: `bearer ${token}`
+                }
+            })
+            if (res.status) {
+                toast.success("profile photo updated sucessfully..")
+                document.getElementById('BannerPreviewModal').close()
+                window.location.reload();
+            }
+        } catch (err) {
+            console.log(err);
+            toast.error("somthing went wrong try again..")
+        }
+        seteditloader(false);
+    }
 
     const handleVideoChange = (e) => {
         setaddVideoError(false)
@@ -83,14 +184,14 @@ function YourChannel() {
             const thambnailData = new FormData();
             thambnailData.append("file", thumbnail);
             thambnailData.append("upload_preset", "vidify_image_preset");
-            const thambnailRes = await axios.post(`https://api.cloudinary.com/v1_1/dsq6bfksv/image/upload`, thambnailData);
+            const thambnailRes = await axios.post(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUD_NAME}/image/upload`, thambnailData);
             const thambnailUrl = thambnailRes.data.secure_url;
             console.log(thambnailUrl);
 
             const videoData = new FormData();
             videoData.append("file", video);
             videoData.append("upload_preset", "vidify_video_preset");
-            const videoRes = await axios.post(`https://api.cloudinary.com/v1_1/dsq6bfksv/video/upload`, videoData);
+            const videoRes = await axios.post(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUD_NAME}/video/upload`, videoData);
             const videoUrl = videoRes.data.secure_url;
             const videoPublicId = videoRes.data.public_id;
             console.log(videoUrl);
@@ -233,6 +334,22 @@ function YourChannel() {
         setloader(false)
     };
 
+    const fetchChannelVideos = async () => {
+        // setloader(true)
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/video/channel/${userDetails?.channel}?limit=4`)
+        setcurrentPage(res.data.response.currentPage);
+        setmoreData(res.data.response.moreData)
+        setvideoData(res.data.response.data)
+        // setloader(false)
+    }
+
+    const fetchMore = async () => {
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/video/channel/${userDetails?.channel}?limit=4&page=${currentPage + 1}`)
+        setcurrentPage(res.data.response.currentPage);
+        setmoreData(res.data.response.moreData)
+        setvideoData(prev => [...prev, ...res.data.response.data])
+    }
+
     const getCategory = async () => {
         try {
             const res = await axios.get("http://localhost:3000/api/category/getCategory");
@@ -254,32 +371,41 @@ function YourChannel() {
     useEffect(() => {
         if (userDetails?.channel) {
             fetchData();
+            fetchChannelVideos();
         }
         getCategory();
     }, [userDetails]);
 
     return (
-        <div className='overflow-y-auto w-full h-full'>
+        <div className='overflow-y-auto w-full h-full' id='scrollContainer'>
             {
                 !islogedIn ? <Unauthorized msg="channel details" /> :
                     userDetails?.channel ? loader ? <ChannelSkeleton /> : (
                         <div>
-                            <div className='px-5 py-2'>
-                                <section className='hidden sm:block'>
+                            <div className=' px-2 sm:px-5 py-2'>
+                                <section className='hidden sm:block relative'>
                                     <img className='w-[100%] h-44 object-cover rounded-3xl pt-2' src={data?.banner_image} alt="Channel banner" />
+                                    <section onClick={() => {
+                                        channelProfileRef.current.click()
+                                    }} className='absolute top-5 cursor-pointer right-2 dark:bg-black bg-bg_white rounded-full p-1'><IoIosCamera color='dark:white black' size={25} /></section>
+                                    <input ref={channelProfileRef} type="file" id="profile" name="profile" className="hidden absolute inset-0" accept="image/*" onChange={handleChannelBannerEdit} />
                                 </section>
 
                                 <section className='grid grid-cols-1 sm:grid-cols-[180px_auto] items-center my-4 mx-2'>
-                                    <section className='flex sm:block justify-center'>
+                                    <section className='flex sm:block justify-center relative '>
                                         <img className='w-40 h-40 object-cover rounded-full' src={data?.profile_image} alt="Channel profile" />
+                                        <section onClick={() => {
+                                            channelBannerRef.current.click()
+                                        }} className='absolute bottom-2 cursor-pointer right-24 sm:right-6 dark:bg-black bg-bg_white rounded-full p-1'><IoIosCamera color='dark:white black' size={25} /></section>
+                                        <input ref={channelBannerRef} type="file" id="profile" name="profile" className="hidden absolute inset-0" accept="image/*" onChange={handleChannelProfileEdit} />
                                     </section>
                                     <section>
                                         <h1 className='mt-2 font-semibold text-3xl dark:text-white text-black'>{data?.name}</h1>
-                                        <section className=' flex items-center'>
-                                            <h1 className='line-clamp-4 text-sm text-gray-500 mt-1'>
-                                                {data?.description?.substring(1, 400)}
+                                        <section className='leading-normal'>
+                                            <h1 className='text-sm text-gray-500 mt-1'>
+                                                {data?.description?.substring(0, 350)}
+                                                <span onClick={() => showDetails()} className={`text-sm text-black dark:text-white cursor-pointer ${data?.description?.length > 350 ? "" : "hidden"}`}  >  . . . .</span>
                                             </h1>
-                                            <span onClick={() => showDetails()} className={`text-lg text-black dark:text-white cursor-pointer ${data?.description?.length > 400 ? "" : "hidden"} mt-1`}  ><IoIosArrowForward /></span>
                                         </section>
                                         <h1 className='mt-1 dark:text-white text-black'>{data?.subscribers.length} subscribers</h1>
                                         <button className='mt-1 bg-red-500 text-white text-sm px-5 py-[4px] rounded-full' onClick={() => document.getElementById('my_modal_3').showModal()}>Post New Video</button>
@@ -289,16 +415,34 @@ function YourChannel() {
                                 <section className='mt-2'>
                                     <h1 className='dark:text-white text-black'>Videos</h1>
                                     <div className='border-t border-gray-500 mt-1'></div>
-                                    <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-4'>
+                                    <div className=''>
                                         {data?.videos?.length === 0 ? (
                                             <div className='w-[90vw] flex justify-center items-center flex-col mt-[-15px]'>
                                                 <img src={noData} className='w-40 h-40' alt="No data" />
                                                 <h1 className='dark:text-white text-black'>No video Found</h1>
                                             </div>
                                         ) : (
-                                            data?.videos?.map((item) => (
-                                                <VideoCard type="your" key={item} data={item} channel={{ _id: data._id, name: data.name, profile: data.profile_image }} />
-                                            ))
+                                            <InfiniteScroll
+                                                dataLength={videoData?.length ? videoData.length : 0}
+                                                next={fetchMore}
+                                                hasMore={moreData}
+                                                className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-2'
+                                                loader={
+                                                    <>
+                                                        <VideoCardSkeleton />
+                                                        <VideoCardSkeleton />
+                                                        <VideoCardSkeleton />
+                                                        <VideoCardSkeleton />
+                                                    </>
+                                                }
+                                                scrollableTarget="scrollContainer"
+                                            >
+                                                {
+                                                    videoData?.map((item, index) => (
+                                                        <VideoCard type="your" key={index} data={item} channel={{ _id: data._id, name: data.name, profile: data.profile_image }} />
+                                                    ))
+                                                }
+                                            </InfiniteScroll>
                                         )}
 
                                     </div>
@@ -478,9 +622,62 @@ function YourChannel() {
                                     </div>
                                 </div>
                             </dialog>
+
                         </div>
                     )
             }
+            <dialog id="profilePreviewModal" className="modal">
+                <div className="modal-box bg-white text-black dark:bg-medium_black dark:text-white sm:max-w-[50vh] sm:max-h-[85vh] max-w-[80svh] max-h-[85svh]">
+                    {
+                        editloader
+                            ? <div className=' h-[35vh] flex justify-center items-center flex-col gap-2'><BeatLoader color='red' /></div> :
+                            <div>
+                                <h1 className=' mb-1'>Profile Preview</h1>
+                                <div>
+                                    {channelProfilePreviewURL && <img src={channelProfilePreviewURL} className=' w-28 h-28 rounded-full m-auto border ' alt="Preview" />}
+                                </div>
+                                <div className=' flex justify-end gap-2 mt-3'>
+                                    <button onClick={updateChannelProfile} className='hover:bg-red-700 dark:hover:bg-red-700 dark:hover:text-white text-xs hover:text-white px-3 py-[4px] rounded-lg dark:bg-gray-800 bg-gray-200 text-black dark:text-white'>Set Image</button>
+                                    <button onClick={(e) => {
+                                        e.stopPropagation();
+                                        setchannelProfileEdit(null);
+                                        setchannelProfilePreviewURL(null);
+                                        channelProfileRef.current.value = "";
+                                        document.getElementById('profilePreviewModal').close()
+                                    }
+                                    } className='dark:hover:bg-red-700 text-xs dark:hover:text-white hover:bg-red-700 hover:text-white px-3 py-[4px] rounded-lg dark:bg-gray-800 bg-gray-200 text-black dark:text-white'>Cancel</button>
+                                </div>
+                            </div>
+                    }
+
+                </div>
+            </dialog>
+
+            <dialog id="BannerPreviewModal" className="modal">
+                <div className="modal-box bg-white text-black dark:bg-medium_black dark:text-white sm:max-w-[60vh] sm:max-h-[85vh] max-w-[90svh] max-h-[85svh]">
+                    {
+                        editloader
+                            ? <div className=' h-[35vh] flex justify-center items-center flex-col gap-2'><BeatLoader color='red' /></div> :
+                            <div>
+                                <h1 className=' mb-1'>Banner Preview</h1>
+                                <div>
+                                    {channelBannerPreviewURL && <img src={channelBannerPreviewURL} className=' w-full h-28 object-cover m-auto border ' alt="Preview" />}
+                                </div>
+                                <div className=' flex justify-end gap-2 mt-3'>
+                                    <button onClick={updateChannelBanner} className='hover:bg-red-700 dark:hover:bg-red-700 dark:hover:text-white text-xs hover:text-white px-3 py-[4px] rounded-lg dark:bg-gray-800 bg-gray-200 text-black dark:text-white'>Set Image</button>
+                                    <button onClick={(e) => {
+                                        e.stopPropagation();
+                                        setchannelBannerEdit(null);
+                                        setchannelBannerPreviewURL(null);
+                                        channelBannerRef.current.value = "";
+                                        document.getElementById('BannerPreviewModal').close()
+                                    }
+                                    } className='dark:hover:bg-red-700 text-xs dark:hover:text-white hover:bg-red-700 hover:text-white px-3 py-[4px] rounded-lg dark:bg-gray-800 bg-gray-200 text-black dark:text-white'>Cancel</button>
+                                </div>
+                            </div>
+                    }
+                </div>
+            </dialog>
         </div>
     );
 }

@@ -13,7 +13,7 @@ function Topics() {
 
     const getCategory = async () => {
         setdataloader(true)
-        const res = await axios.get("http://localhost:3000/api/category/getCategory")
+        const res = await axios.get("http://localhost:3000/api/category/getCategory?search=")
         setcategory(res.data.data.category)
         setdataloader(false)
     }

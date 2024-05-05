@@ -11,7 +11,9 @@ import AuthHook from '../Context/AuthContext';
 import toast from 'react-hot-toast'
 import RelatedVideoCard from './RelatedVideoCard';
 import RelatedVideoSkeleton from '../loaders/RelatedVideoSkeleton';
-import CommentCardSkeleton from '../loaders/CommentCardSkeleton';
+import logo from "../../assets/user_default.png"
+import { MdOutlineSubscriptions } from "react-icons/md";
+import { MdSubscriptions } from "react-icons/md";
 
 function VideoIndex() {
     const pagePath = window.location.href;
@@ -236,12 +238,12 @@ function VideoIndex() {
                             </div>
                             {
                                 userDetails && userDetails.subscribed && userDetails.subscribed.includes(channelData?._id) ? (
-                                    <section onClick={unsubscribe} className=' cursor-pointer rounded-3xl dark:bg-light_black bg-white text-black dark:text-white px-4 py-[8px]'>
-                                        unsubscribe
+                                    <section onClick={unsubscribe} className=' flex items-center gap-2 cursor-pointer rounded-3xl dark:bg-light_black bg-white text-black dark:text-white px-4 py-[4px]'>
+                                        <MdSubscriptions size={15} />unsubscribe
                                     </section>
                                 ) : (
-                                    <section onClick={subscribe} className=' cursor-pointer rounded-3xl dark:bg-light_black bg-white text-black dark:text-white px-4 py-[8px]'>
-                                        subscribe
+                                    <section onClick={subscribe} className='flex items-center gap-2 cursor-pointer rounded-3xl dark:bg-light_black bg-white text-black dark:text-white px-4 py-[4px]'>
+                                        <MdOutlineSubscriptions size={15} />subscribe
                                     </section>
                                 )
                             }
@@ -249,17 +251,17 @@ function VideoIndex() {
                         <section className=' flex items-center justify-end w-[100%] md:w-auto gap-3'>
                             {
                                 likeState ? (
-                                    <section onClick={unlike} className=' cursor-pointer flex items-center gap-2 rounded-3xl dark:bg-light_black bg-white text-black dark:text-white px-4 py-[8px]'>
+                                    <section onClick={unlike} className=' cursor-pointer flex items-center gap-2 rounded-3xl dark:bg-light_black bg-white text-black dark:text-white px-4 py-[4px]'>
                                         <AiFillLike size={19} />unlike
                                     </section>
                                 ) : (
-                                    <section onClick={like} className=' cursor-pointer flex items-center gap-2 rounded-3xl dark:bg-light_black bg-white text-black dark:text-white px-4 py-[8px]'>
+                                    <section onClick={like} className=' cursor-pointer flex items-center gap-2 rounded-3xl dark:bg-light_black bg-white text-black dark:text-white px-4 py-[4px]'>
                                         <AiOutlineLike size={19} />like
                                     </section>
                                 )
                             }
                             <section onClick={shareLink}
-                                className=' cursor-pointer flex items-center gap-2 rounded-3xl dark:bg-light_black bg-white text-black dark:text-white px-4 py-[8px]'>
+                                className=' cursor-pointer flex items-center gap-2 rounded-3xl dark:bg-light_black bg-white text-black dark:text-white px-4 py-[4px]'>
                                 <PiShareFatLight size={20} />share
                             </section>
                         </section>
@@ -276,13 +278,13 @@ function VideoIndex() {
                     <section className=' my-3 flex flex-col items-end'>
                         <section className='flex gap-3 items-cente w-[100%]'>
                             <img className=' rounded-full w-10 h-10 object-cover'
-                                src={channelData?.profile_image} />
+                                src={userDetails?.profile_image ? userDetails.profile_image : logo} />
                             <input type='text' value={commenttext} onChange={(e) => {
                                 setcommenttext(e.target.value)
                             }} className=' focus:border-b-2 focus:outline-none w-[100%] dark:text-gray-400 text-gray-700 border-b px-2 py-[5px] bg-transparent'
                                 placeholder='Add a comment' />
                         </section>
-                        <button onClick={addComment} className={`${commenttext.length > 0 ? " w-32 px-4 py-[5px]" : "w-[0px]"} overflow-hidden transition-all ease-in-out duration-300 dark:bg-light_black bg-white dark:text-white text-black  rounded-3xl mt-3`}>Comment</button>
+                        <button onClick={addComment} className={`${commenttext.length > 0 ? " w-28 py-[5px]" : "w-[0px]"} text-sm overflow-hidden transition-all ease-in-out duration-300 dark:bg-light_black bg-white dark:text-white text-black  rounded-3xl mt-3`}>Comment</button>
                     </section>
                     <section>
                         {

@@ -22,7 +22,7 @@ export const MainProvider = ({ children }) => {
     const [selectedTpic, setselectedTpic] = useState("all")
     const [data, setdata] = useState([]);
     const [loading, setloading] = useState(false);
-    const [search, setsearch] = useState("")
+    const [search, setsearch] = useState(null)
 
     const toggletheme = () => {
         if (darkstate) {

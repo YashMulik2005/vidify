@@ -35,7 +35,6 @@ function Subscribed() {
 
 
     const getSelectedVideo = async () => {
-        console.log("vytvygcv");
         if (islogedIn) {
             setloader(true)
             const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/video/channel/${selectChannel}`, {
@@ -87,7 +86,7 @@ function Subscribed() {
                             })
                         }
                     </div>
-                    <div className='border-b  dark:border-[#353333]'></div>
+                    <div className={`${userDetails?.subscribed?.length == 0 ? "hidden" : ""} border-b  dark:border-[#353333]`}></div>
                     {/* {moreData ? "yes" : "no"}
                     {currentPage} */}
                     <div>

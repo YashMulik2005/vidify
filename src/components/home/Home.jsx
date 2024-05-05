@@ -18,22 +18,32 @@ function Home() {
         try {
             setloading(true)
             let url;
-            if (islogedIn && selectedTpic == "all") {
-                url = `${import.meta.env.VITE_BACKEND_URL}/feed/feeddata`;
+            if (search != null && search != "") {
+                const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/video/search?page=${1}`, {
+                    search: search
+                })
+
+                setcurrrentPage(res.data.response.currentPage);
+                setmoreData(res.data.response.moreData);
+                setdata(prev => [...prev, ...res.data.response.data]);
             } else {
-                url = `${import.meta.env.VITE_BACKEND_URL}/video/getvideos?topic=${selectedTpic}`;
-            }
-
-            const res = await axios.get(url, {
-                headers: {
-                    "authentication": token ? `bearer ${token}` : {}
+                if (islogedIn && selectedTpic == "all") {
+                    url = `${import.meta.env.VITE_BACKEND_URL}/feed/feeddata`;
+                } else {
+                    url = `${import.meta.env.VITE_BACKEND_URL}/video/getvideos?topic=${selectedTpic}`;
                 }
-            });
 
-            setcurrrentPage(res.data.response.currentPage);
-            setmoreData(res.data.response.moreData);
-            setdata(res.data.response.data);
-            setloading(false)
+                const res = await axios.get(url, {
+                    headers: {
+                        "authentication": token ? `bearer ${token}` : {}
+                    }
+                });
+
+                setcurrrentPage(res.data.response.currentPage);
+                setmoreData(res.data.response.moreData);
+                setdata(res.data.response.data);
+                setloading(false)
+            }
         } catch (error) {
             console.error("Error fetching data:", error);
         }
@@ -47,7 +57,7 @@ function Home() {
         try {
             let url;
             if (search != null && search != "") {
-                const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/video/suggestSearch?page=${currrentPage + 1}`, {
+                const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/video/search?page=${currrentPage + 1}`, {
                     search: search
                 })
 
@@ -122,7 +132,7 @@ function Home() {
                 </InfiniteScroll>
             )
             }
-        </div >
+        </div>
     );
 }
 

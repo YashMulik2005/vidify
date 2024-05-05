@@ -5,11 +5,12 @@ import axios from 'axios';
 import noData from '../../assets/noData.png'
 import AuthHook from '../Context/AuthContext';
 import toast from 'react-hot-toast';
-import { IoIosArrowForward } from "react-icons/io";
 import { FiLink } from "react-icons/fi";
 import { MdOutlineVideoLibrary, MdSupervisorAccount } from "react-icons/md";
 import { PiShareFatLight } from "react-icons/pi";
 import ChannelSkeleton from '../loaders/ChannelSkeleton';
+import InfiniteScroll from 'react-infinite-scroll-component';
+import VideoCardSkeleton from '../loaders/VideoCardSkeleton';
 
 function ChannelIndex() {
     const { id } = useParams();
@@ -17,6 +18,9 @@ function ChannelIndex() {
     const { userDetails, token, getUserDetails, islogedIn } = AuthHook();
     const [subsciberCount, setsubsciberCount] = useState(0);
     const [loader, setloader] = useState(false)
+    const [currentPage, setcurrentPage] = useState(0);
+    const [moreData, setmoreData] = useState(false)
+    const [videoData, setvideoData] = useState()
     const path = window.location.href;
     const navigate = useNavigate();
 
@@ -26,6 +30,22 @@ function ChannelIndex() {
         //console.log(res.data.data);
         setdata(res.data.data);
         setloader(false)
+    }
+
+    const fetchChannelVideos = async () => {
+        // setloader(true)
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/video/channel/${id}?limit=4`)
+        setcurrentPage(res.data.response.currentPage);
+        setmoreData(res.data.response.moreData)
+        setvideoData(res.data.response.data)
+        // setloader(false)
+    }
+
+    const fetchMore = async () => {
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/video/channel/${id}?limit=4&page=${currentPage + 1}`)
+        setcurrentPage(res.data.response.currentPage);
+        setmoreData(res.data.response.moreData)
+        setvideoData(prev => [...prev, ...res.data.response.data])
     }
 
     const subscribe = async () => {
@@ -81,18 +101,20 @@ function ChannelIndex() {
 
     useEffect(() => {
         fatchdata()
+        fetchChannelVideos()
     }, [])
+
     useEffect(() => {
         setsubsciberCount(data?.subscribers.length || 0);
     }, [data])
 
 
     return (
-        <div className=' px-5 py-2 overflow-y-auto'>
+        <div className=' px-2 sm:px-5 py-2 overflow-y-auto' id='scrollContainer'>
             {
                 loader ? <ChannelSkeleton /> :
                     <div>
-                        <div>
+                        <div className=''>
                             <section className=' hidden sm:block'>
                                 <img className=' w-[100%] h-44 rounded-3xl pt-2 object-cover'
                                     src={data?.banner_image} />
@@ -105,18 +127,19 @@ function ChannelIndex() {
                                 </section>
                                 <section className=' '>
                                     <h1 className='mt-2 font-semibold text-3xl dark:text-white text-black'>{data?.name}</h1>
-                                    <section className=' flex items-center'>
-                                        <h1 className='line-clamp-4 text-sm flex items-center text-gray-500 mt-1'>
-                                            {data?.description?.substring(1, 50)}<span onClick={() => showDetails()} className={`text-lg text-black dark:text-white cursor-pointer ${data?.description?.length > 50 ? "" : "hidden"} mt-1`}  ><IoIosArrowForward /></span>
+                                    <section className='leading-normal'>
+                                        <h1 className='text-sm text-gray-500 mt-1'>
+                                            {data?.description?.substring(0, 350)}
+                                            <span onClick={() => showDetails()} className={`text-sm text-black dark:text-white cursor-pointer ${data?.description?.length > 350 ? "" : "hidden"}`}  >  . . . .</span>
                                         </h1>
                                     </section>
 
                                     <h1 className=' mt-1 dark:text-white text-black'> {subsciberCount} subscribers</h1>
                                     {
                                         userDetails && userDetails.subscribed && userDetails.subscribed.includes(id) ? (
-                                            <button className='mt-1 bg-gray-500 text-white px-5 py-[4px] rounded-full' onClick={unsubscribe}>unsubscribe</button>
+                                            <button className='mt-1 text-white px-4 text-sm py-[4px] rounded-full' onClick={unsubscribe}>unsubscribe</button>
                                         ) : (
-                                            <button className='mt-1 bg-white text-black px-5 py-[4px] rounded-full' onClick={subscribe}>subscribe</button>
+                                            <button className='mt-1 bg-white text-black px-4 text-sm py-[4px] rounded-full' onClick={subscribe}>subscribe</button>
                                         )
                                     }
                                 </section>
@@ -125,16 +148,34 @@ function ChannelIndex() {
                             <section className=' mt-2'>
                                 <h1 className=' dark:text-white text-black'>Videos</h1>
                                 <div className=' border-t border-gray-500 mt-1'></div>
-                                <div className=' grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-2'>
-                                    {data?.videos?.length === 0 ? (
+                                <div className=''>
+                                    {videoData?.length === 0 ? (
                                         <div className='w-[90vw] flex justify-center items-center flex-col mt-[-15px]'>
                                             <img src={noData} className='w-40 h-40' alt="No data" />
                                             <h1 className='dark:text-white text-black'>No video Found</h1>
                                         </div>
                                     ) : (
-                                        data?.videos?.map((item, index) => (
-                                            <VideoCard type="all" key={index} data={item} channel={{ _id: data._id, name: data.name, profile: data.profile_image }} />
-                                        ))
+                                        < InfiniteScroll
+                                            dataLength={videoData?.length ? videoData.length : 0}
+                                            next={fetchMore}
+                                            hasMore={moreData}
+                                            className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-2'
+                                            loader={
+                                                <>
+                                                    <VideoCardSkeleton />
+                                                    <VideoCardSkeleton />
+                                                    <VideoCardSkeleton />
+                                                    <VideoCardSkeleton />
+                                                </>
+                                            }
+                                            scrollableTarget="scrollContainer"
+                                        >
+                                            {
+                                                videoData?.map((item, index) => (
+                                                    <VideoCard type="all" key={index} data={item} channel={{ _id: data._id, name: data.name, profile: data.profile_image }} />
+                                                ))
+                                            }
+                                        </InfiniteScroll>
                                     )}
                                 </div>
                             </section>
@@ -200,7 +241,7 @@ function ChannelIndex() {
                         </dialog>
                     </div>
             }
-        </div>
+        </div >
     )
 }
 
