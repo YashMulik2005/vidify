@@ -10,7 +10,7 @@ function SideBar() {
     const navigate = useNavigate()
     return (
         // <div className=' bg-white dark:bg-dark_black h-[92svh] sm:h-[92vh] flex flex-col px-2 py-4 gap-4'>
-        <div className=' h-[92svh] sm:h-[92vh] flex flex-col px-2 py-4 gap-2'>
+        <div className=' h-[90svh] sm:h-[90vh] flex flex-col px-2 py-4 gap-2'>
             <section onClick={() => {
                 setpath("home")
                 navigate("/")

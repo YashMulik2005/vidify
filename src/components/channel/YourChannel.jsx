@@ -19,6 +19,7 @@ import Unauthorized from '../../errors/Unauthorized';
 import { IoIosCamera } from "react-icons/io";
 import InfiniteScroll from 'react-infinite-scroll-component';
 import VideoCardSkeleton from '../loaders/VideoCardSkeleton';
+import { MdOutlineEdit } from "react-icons/md";
 
 function YourChannel() {
     const [data, setdata] = useState();
@@ -63,6 +64,12 @@ function YourChannel() {
     const [channelProfilePreviewURL, setchannelProfilePreviewURL] = useState(null)
     const [channelBannerPreviewURL, setchannelBannerPreviewURL] = useState(null)
     const [editloader, seteditloader] = useState()
+    const [nameEdit, setnameEdit] = useState();
+    const [desEdit, setdesEdit] = useState();
+    const [topicEdit, settopicEdit] = useState([]);
+    const [topicEditId, settopicEditId] = useState([]);
+    const [editError, seteditError] = useState(false)
+    const [editChannelLoader, seteditChannelLoader] = useState(false)
 
     //video data states
     const [videoData, setvideoData] = useState()
@@ -228,6 +235,12 @@ function YourChannel() {
         setChannelSelectedTopicIds(selectedIds);
     };
 
+    const handleEditTopic = (selectedList) => {
+        const selectedIds = selectedList.map(item => item._id);
+        settopicEdit(selectedList);
+        settopicEditId(selectedIds);
+    }
+
     const handleProfileChange = (e) => {
         setErrorToInitial();
         setChannelProfile(e.target.files[0]);
@@ -350,9 +363,40 @@ function YourChannel() {
         setvideoData(prev => [...prev, ...res.data.response.data])
     }
 
+    const handleChannelEdit = async (e) => {
+        e.preventDefault()
+        if (nameEdit === "" || desEdit === "" || topicEditId.length === 0) {
+            seteditError(true);
+            return;
+        }
+
+        try {
+            seteditChannelLoader(true)
+            const res = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/channel/updateDetails`, {
+                channelId: userDetails?.channel,
+                name: nameEdit,
+                description: desEdit,
+                categories: topicEditId
+            }, {
+                headers: {
+                    authentication: `bearer ${token}`
+                }
+            })
+            if (res.status) {
+                toast.success("Channel data updated sucessfully..")
+                document.getElementById('editChannelDeatailsModel').close()
+                window.location.reload();
+            }
+        } catch (err) {
+            console.log(err);
+            toast.err("something went wrong....")
+        }
+        seteditChannelLoader(false)
+    }
+
     const getCategory = async () => {
         try {
-            const res = await axios.get("http://localhost:3000/api/category/getCategory");
+            const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/category/getCategory?search=`);
             setCategory(res.data.data.category);
         } catch (error) {
             console.error("Error fetching categories:", error);
@@ -396,11 +440,20 @@ function YourChannel() {
                                         <img className='w-40 h-40 object-cover rounded-full' src={data?.profile_image} alt="Channel profile" />
                                         <section onClick={() => {
                                             channelBannerRef.current.click()
-                                        }} className='absolute bottom-2 cursor-pointer right-24 sm:right-6 dark:bg-black bg-bg_white rounded-full p-1'><IoIosCamera color='dark:white black' size={25} /></section>
+                                        }} className='absolute top-2 cursor-pointer right-2 sm:right-6 dark:bg-black bg-bg_white rounded-full p-1'><IoIosCamera color='dark:white black' size={25} /></section>
                                         <input ref={channelBannerRef} type="file" id="profile" name="profile" className="hidden absolute inset-0" accept="image/*" onChange={handleChannelProfileEdit} />
                                     </section>
-                                    <section>
+                                    <section className=' relative'>
                                         <h1 className='mt-2 font-semibold text-3xl dark:text-white text-black'>{data?.name}</h1>
+                                        <p className=' absolute right-2 top-2 flex items-center gap-1 text-sm cursor-pointer' onClick={() => {
+                                            setnameEdit(data?.name);
+                                            setdesEdit(data?.description);
+                                            settopicEdit(data?.categories);
+                                            const selectedIds = data?.categories?.map(item => item._id);
+                                            settopicEditId(selectedIds);
+                                            seteditError(false)
+                                            document.getElementById('editChannelDeatailsModel').showModal()
+                                        }}>edit <MdOutlineEdit size={13} /></p>
                                         <section className='leading-normal'>
                                             <h1 className='text-sm text-gray-500 mt-1'>
                                                 {data?.description?.substring(0, 350)}
@@ -612,6 +665,7 @@ function YourChannel() {
                                                 displayValue="name"
                                                 onSelect={handleChannelTopicSelect}
                                                 onRemove={handleChannelTopicSelect}
+                                                className=' dark:text-black'
                                             />
                                             <h1 className={` ${errorCreate.topic ? "" : "hidden"} text-xs text-red-500 m-[2px]`}>*category is required</h1><br />
 
@@ -678,6 +732,50 @@ function YourChannel() {
                     }
                 </div>
             </dialog>
+
+            <dialog id="editChannelDeatailsModel" className="modal">
+                <div className="modal-box bg-white text-black dark:bg-medium_black dark:text-white sm:max-w-[90vh] sm:max-h-[85vh] max-w-[90svh] max-h-[85svh]">
+
+                    <form method="dialog">
+                        <button className="btn btn-md btn-circle btn-ghost text-lg absolute right-2 top-2">✕</button>
+                    </form>
+                    <h1 className='text-lg font-semibold'>Edit Channel Details</h1>
+                    <div className='overflow-y-auto p-2'>
+                        {
+                            editChannelLoader ?
+                                <div className='flex h-[50vh] justify-center items-center flex-col gap-2'><BeatLoader color='red' /></div>
+                                : <form >
+                                    {editError && <h1 className=' text-sm text-red-500'>* All Fileds are required.</h1>}
+                                    <label className='text-sm'>Title:</label><br />
+                                    <input value={nameEdit} onChange={(e) => {
+                                        setnameEdit(r.target.value)
+                                    }} className='px-3 py-[5px] rounded-lg bg-white dark:bg-light_black dark:border-none border w-[100%] focus:outline-none' type="text" id="title" name="title" />
+
+
+                                    <label className='text-sm'>Description:</label><br />
+                                    <textarea value={desEdit} onChange={(e) => {
+                                        setdesEdit(e.target.value)
+                                    }} className='px-3 py-[5px] text-sm rounded-lg bg-white border dark:bg-light_black dark:border-none w-[100%] focus:outline-none' id="description" name="description" rows="4" cols="50"></textarea>
+
+                                    <label className='text-sm mt-2'>Topics:</label><br />
+                                    <Multiselect
+                                        style={{ borderWidth: '0px' }}
+                                        selectedValues={topicEdit}
+                                        options={category}
+                                        displayValue="name"
+                                        onSelect={handleEditTopic}
+                                        onRemove={handleEditTopic}
+                                        className=' dark:text-black dark:bg-light_black border-none outline-none'
+                                    />
+
+                                    <button type='submit' onClick={handleChannelEdit} className='bg-red-500 rounded-lg cursor-pointer text-white px-3 py-[3px] text-sm mt-3'>Edit Channel</button>
+                                </form>
+                        }
+
+                    </div>
+                </div>
+            </dialog>
+
         </div>
     );
 }

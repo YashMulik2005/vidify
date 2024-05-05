@@ -3,7 +3,7 @@ import ChannelCard from './ChannelCard'
 import axios from 'axios'
 import ChannelCardSkeleton from '../loaders/ChannelCardSkeleton'
 import noData from '../../assets/noData.png';
-import { MdHistory } from "react-icons/md";
+import { IoMdSearch } from "react-icons/io";
 import InfiniteScroll from 'react-infinite-scroll-component';
 
 function ChannelList() {
@@ -32,19 +32,19 @@ function ChannelList() {
         setdata(prev => [...prev, ...res.data.response.data])
     }
 
-    const handlesearch = async () => {
-        setsearchSuggest([]);
+    const handlesearch = async (q = null) => {
         setloader(true)
         const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/channel/search?page=1`, {
-            search: search == null ? "" : search
+            search: q != null ? q : search == null ? "" : search
         })
         setdata(res.data.response.data);
+        setsearchSuggest([]);
         setloader(false)
     }
 
     const handleSuggest = async () => {
         const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/channel/suggestSearch`, {
-            search: search
+            search: search == "" ? null : search
         })
         setsearchSuggest(res.data.response);
     }
@@ -74,11 +74,20 @@ function ChannelList() {
                     <input onChange={(e) => setsearch(e.target.value)} value={search} className=' dark:bg-medium_black rounded-full text-sm px-5 py-[7px] w-[90%] bg-white text-black dark:text-text dark:border-none border focus:outline-none' placeholder='search' />
                 </form>
                 <section className={`z-30 w-[100%] flex justify-center items-center max-h-80 overflow-y-auto absolute mt-1 ${search === "" || searchSuggest?.length === 0 ? "hidden" : ""}`}>
-                    <div className='dark:bg-light_black w-[90%] max-h-80
-                     p-3 text-sm rounded-lg overflow-y-auto'>
+                    <div className='dark:bg-light_black bg-white w-[90%] max-h-80
+                      text-sm rounded-lg overflow-y-auto'>
                         {
                             searchSuggest?.map((item, index) => (
-                                <h1 key={index} className=' line-clamp-1 my-[8px] text-black dark:text-white flex items-center gap-3'><MdHistory size={20} />{item.name}</h1>
+                                <div key={index} className='hover:bg-gray-100 dark:hover:bg-black py-[4px] px-2 line-clamp-1 my-[8px] text-black dark:text-white flex items-center gap-3'>
+                                    <section className='w-[6%]'>
+                                        <IoMdSearch size={20} />
+                                    </section>
+                                    <section className='w-[94%] cursor-pointer' onClick={() => {
+                                        handlesearch(item.name);
+                                    }}>
+                                        {item.name}
+                                    </section>
+                                </div>
                             ))
                         }
                     </div>
