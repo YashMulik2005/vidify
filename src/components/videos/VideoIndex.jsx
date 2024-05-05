@@ -81,7 +81,7 @@ function VideoIndex() {
 
 
     const getVideoURL = async () => {
-        const res = await axios.post("http://localhost:3000/Image", { public_id: videoData?.public_id })
+        const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/Image`, { public_id: videoData?.public_id })
         sethlsLink(res.data.hls_url)
     }
 
