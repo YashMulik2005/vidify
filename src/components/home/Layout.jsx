@@ -20,7 +20,7 @@ function Layout() {
                     <Outlet />
                 </div>
                 {userDetailsLoader && (
-                    <div className="absolute inset-0 bg-opacity-30 bg-gray-900 backdrop-blur-md flex justify-center items-center dark:text-white text-black">
+                    <div className="absolute inset-0 bg-opacity-100 bg-gray-900 backdrop-blur-md flex justify-center items-center dark:text-white text-black">
                         <PuffLoader size={45} color="red" />
                     </div>
                 )}

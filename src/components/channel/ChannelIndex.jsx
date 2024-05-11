@@ -34,7 +34,7 @@ function ChannelIndex() {
 
     const fetchChannelVideos = async () => {
         // setloader(true)
-        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/video/channel/${id}?limit=4`)
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/video/channel/${id}?limit=8`)
         setcurrentPage(res.data.response.currentPage);
         setmoreData(res.data.response.moreData)
         setvideoData(res.data.response.data)
@@ -42,7 +42,7 @@ function ChannelIndex() {
     }
 
     const fetchMore = async () => {
-        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/video/channel/${id}?limit=4&page=${currentPage + 1}`)
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/video/channel/${id}?limit=8&page=${currentPage + 1}`)
         setcurrentPage(res.data.response.currentPage);
         setmoreData(res.data.response.moreData)
         setvideoData(prev => [...prev, ...res.data.response.data])

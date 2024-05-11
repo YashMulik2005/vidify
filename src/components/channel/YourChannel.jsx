@@ -23,7 +23,7 @@ import { MdOutlineEdit } from "react-icons/md";
 
 function YourChannel() {
     const [data, setdata] = useState();
-    // Edit video state
+    // add video state
     const imageRef = useRef(null);
     const videoRef = useRef(null);
     const [category, setCategory] = useState([]);
@@ -38,8 +38,8 @@ function YourChannel() {
     // Create channel states
     const [channelSelectedTopics, setChannelSelectedTopics] = useState([]);
     const [channelSelectedTopicIds, setChannelSelectedTopicIds] = useState([]);
-    const [channelBanner, setChannelBanner] = useState();
-    const [channelProfile, setChannelProfile] = useState();
+    const [channelBanner, setChannelBanner] = useState(null);
+    const [channelProfile, setChannelProfile] = useState(null);
     const [bannerName, setBannerName] = useState('');
     const [profileName, setProfileName] = useState('');
     const [channelName, setChannelName] = useState('');
@@ -219,9 +219,8 @@ function YourChannel() {
             });
 
             if (res.data.status) {
-                document.getElementById('my_modal_3').close();
-                toast.success("Video uploaded successfully.");
                 window.location.reload();
+                toast.success("Video uploaded successfully.");
             }
             setVideoLoader(false)
             setuserDetailsLoader(false)
@@ -294,7 +293,7 @@ function YourChannel() {
         e.preventDefault();
         setChannelLoader(true);
         setError();
-        if (!errorCreate.name && !errorCreate.desc && !errorCreate.banner && !errorCreate.profile && !errorCreate.topic) {
+        if (!channelName !== "" && channelDesc !== "" && channelBanner !== null && channelProfile !== null && channelSelectedTopicIds.length !== 0) {
             try {
                 const profileData = new FormData();
                 profileData.append("file", channelProfile);
@@ -349,7 +348,7 @@ function YourChannel() {
 
     const fetchChannelVideos = async () => {
         // setloader(true)
-        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/video/channel/${userDetails?.channel}?limit=4`)
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/video/channel/${userDetails?.channel}?limit=8`)
         setcurrentPage(res.data.response.currentPage);
         setmoreData(res.data.response.moreData)
         setvideoData(res.data.response.data)
@@ -357,7 +356,7 @@ function YourChannel() {
     }
 
     const fetchMore = async () => {
-        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/video/channel/${userDetails?.channel}?limit=4&page=${currentPage + 1}`)
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/video/channel/${userDetails?.channel}?limit=8&page=${currentPage + 1}`)
         setcurrentPage(res.data.response.currentPage);
         setmoreData(res.data.response.moreData)
         setvideoData(prev => [...prev, ...res.data.response.data])
@@ -461,7 +460,18 @@ function YourChannel() {
                                             </h1>
                                         </section>
                                         <h1 className='mt-1 dark:text-white text-black'>{data?.subscribers.length} subscribers</h1>
-                                        <button className='mt-1 bg-red-500 text-white text-sm px-5 py-[4px] rounded-full' onClick={() => document.getElementById('my_modal_3').showModal()}>Post New Video</button>
+                                        <button className='mt-1 bg-red-500 text-white text-sm px-5 py-[4px] rounded-full' onClick={() => {
+                                            setTitle("")
+                                            setDesc("")
+                                            setVideo();
+                                            setThumbnail()
+                                            setSelectedTopics([])
+                                            setSelectedTopicIds([])
+                                            setThumbnailName("")
+                                            setVideoFileName("");
+                                            document.getElementById('my_modal_3').showModal()
+                                        }
+                                        }>Post New Video</button>
                                     </section>
                                 </section>
 
@@ -491,8 +501,8 @@ function YourChannel() {
                                                 scrollableTarget="scrollContainer"
                                             >
                                                 {
-                                                    videoData?.map((item, index) => (
-                                                        <VideoCard type="your" key={index} data={item} channel={{ _id: data._id, name: data.name, profile: data.profile_image }} />
+                                                    videoData?.map((item) => (
+                                                        <VideoCard type="your" key={item._id} data={item} channel={{ _id: data._id, name: data.name, profile: data.profile_image, description: data.description, categories: data.categories }} />
                                                     ))
                                                 }
                                             </InfiniteScroll>
@@ -608,6 +618,14 @@ function YourChannel() {
                                 <p className='text-sm text-gray-500 '>Create one and post your videos</p>
                                 <button className='bg-red-500 text-white px-4 py-[5px] rounded-lg my-2' onClick={() => {
                                     if (token) {
+                                        setChannelName("");
+                                        setChannelDesc(""),
+                                            setChannelSelectedTopicIds([]),
+                                            setChannelBanner(null),
+                                            setChannelProfile(null),
+                                            setChannelSelectedTopics([])
+                                        setProfileName("")
+                                        setBannerName("")
                                         document.getElementById('my_modal_4').showModal();
                                     } else {
                                         toast.error("Login first to create a channel.");

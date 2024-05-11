@@ -16,8 +16,6 @@ function VideoCard({ type, data, channel }) {
     const { token } = AuthHook()
     const [videoOption, setvideoOption] = useState(false);
     const [category, setcategory] = useState([])
-    const [thumbnailName, setThumbnailName] = useState("");
-    const [thambnail, setthambnail] = useState();
     const [selectedTopics, setselectedTopics] = useState([])
     const [selectedTopicIds, setselectedTopicIds] = useState([]);
     const [title, settitle] = useState("")
@@ -86,7 +84,7 @@ function VideoCard({ type, data, channel }) {
         setdeleteLoader(false)
     }
     const getCategory = async () => {
-        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/category/getCategory`)
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/category/getCategory?search=`)
         setcategory(res.data.data.category)
     }
 
@@ -138,11 +136,17 @@ function VideoCard({ type, data, channel }) {
                             }} /></h1>
                             <h1 className=' cursor-pointer' onClick={(e) => {
                                 e.stopPropagation();
+                                settitle(channel.name)
+                                setdesc(channel.description)
+                                setselectedTopics(channel.categories)
+                                setselectedTopicIds(channel?.categories?.map((item) => item._id))
                                 document.getElementById('my_modal_1').showModal()
+                                setvideoOption(false)
                             }}>Edit</h1>
                             <h1 className=' cursor-pointer' onClick={(e) => {
                                 e.stopPropagation();
                                 document.getElementById('my_modal_2').showModal()
+                                setvideoOption(false)
                             }}>Delete</h1>
                         </section>
                         <div>
@@ -189,14 +193,6 @@ function VideoCard({ type, data, channel }) {
                                         setdesc(e.target.value)
                                     }} className=' text-sm px-3 py-[5px] rounded-lg bg-white border dark:bg-light_black dark:border-none w-[100%] focus:outline-none' id="description" name="description" rows="7" cols="50"></textarea><br />
 
-                                    {/* <label className=' text-sm'>Thambnail Image</label><br />
-                                <div className="flex items-center justify-between w-full dark:bg-light_black dark:border-none bg-white border rounded-lg px-3 py-[5px] focus:outline-none">
-                                    <label onClick={() => {
-                                        imageRef.current.click();
-                                    }} className="cursor-pointer flex items-center  gap-3 text-sm"><MdCloudUpload size={28} color=' gray' />Choose File</label>
-                                </div>
-                                <h1 className=' text-xs mt-1 text-gray-600'>{thumbnailName}</h1>
-                                <br /> */}
 
                                     <label className=' text-sm'>Topics<span className=' text-red-500 text-xs'> *</span></label><br />
                                     <Multiselect
@@ -206,6 +202,7 @@ function VideoCard({ type, data, channel }) {
                                         displayValue="name"
                                         onSelect={handleTopicSelect}
                                         onRemove={handleTopicSelect}
+                                        className=' dark:text-black'
                                     />
                                     <h1 className=' text-xs mt-[2px] text-gray-500'>select topics for video</h1>
                                     <br />

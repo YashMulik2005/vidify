@@ -21,7 +21,7 @@ function VideoIndex() {
     const [videoData, setvideoData] = useState()
     const [channelData, setchannelData] = useState()
     const [hlsLink, sethlsLink] = useState()
-    const { userDetails, token, getUserDetails, islogedIn } = AuthHook();
+    const { userDetails, token, getUserDetails, islogedIn, getUserDetails2 } = AuthHook();
     const [subsciberCount, setsubsciberCount] = useState(0);
     const [likeState, setlikeState] = useState(false)
     const [commenttext, setcommenttext] = useState("")
@@ -51,8 +51,6 @@ function VideoIndex() {
                         "authentication": `bearer ${token}`
                     }
                 })
-
-                console.log(res);
             } catch (err) {
                 console.log(err);
             }
@@ -95,7 +93,7 @@ function VideoIndex() {
                 }
             })
             if (res.data.status) {
-                getUserDetails();
+                userDetails.subscribed = [...(userDetails.subscribed || []), channelData?._id];
                 setsubsciberCount(prevCount => prevCount + 1)
             } else {
                 toast.error("someting went wrong...")
@@ -115,7 +113,7 @@ function VideoIndex() {
                 }
             })
             if (res.data.status) {
-                getUserDetails();
+                userDetails.subscribed = userDetails.subscribed.filter(subId => subId !== channelData?._id);
                 setsubsciberCount(prevCount => prevCount - 1)
             } else {
                 toast.error("someting went wrong...")
@@ -135,7 +133,6 @@ function VideoIndex() {
                 }
             })
             if (res.data.status) {
-                getUserDetails();
                 setlikeState(true)
             } else {
                 toast.error("someting went wrong...")
@@ -155,7 +152,6 @@ function VideoIndex() {
                 }
             })
             if (res.data.status) {
-                getUserDetails();
                 setlikeState(false)
             } else {
                 toast.error("someting went wrong...")
