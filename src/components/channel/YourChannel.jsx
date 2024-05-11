@@ -571,7 +571,7 @@ function YourChannel() {
 
                             <dialog id="details_model" className="modal">
                                 <div className="modal-box bg-white text-black dark:bg-medium_black dark:text-white sm:max-w-[90vh] sm:max-h-[700vh] max-w-[90svh] max-h-[70svh]">
-                                    <div>
+                                    <div className=' max-h-[65vh] overflow-y-auto'>
                                         <button className="btn btn-md btn-circle btn-ghost text-lg absolute right-2 top-2" onClick={() => document.getElementById('details_model').close()}>✕</button>
                                         <h1 className='text-lg font-semibold'>About</h1>
                                         <p className=' text-sm mt-3'>{data?.name}</p>
@@ -594,7 +594,7 @@ function YourChannel() {
 
                                         <section onClick={async () => {
                                             try {
-                                                const copied = await navigator.clipboard.writeText(`http://localhost:5173/channel/${userDetails?.channel}`);
+                                                const copied = await navigator.clipboard.writeText(window.location.href);
                                                 toast.success('link copied to clipboard.')
 
                                             } catch (err) {

@@ -21,7 +21,7 @@ function ChannelCard({ data }) {
                 }
             })
             if (res.data.status) {
-                getUserDetails();
+                userDetails.subscribed = [...(userDetails.subscribed || []), data?._id];
                 setsubsciberCount(prevCount => prevCount + 1)
             } else {
                 toast.error("someting went wrong...")
@@ -41,7 +41,7 @@ function ChannelCard({ data }) {
                 }
             })
             if (res.data.status) {
-                getUserDetails();
+                userDetails.subscribed = userDetails.subscribed.filter(subId => subId !== data?._id);
                 setsubsciberCount(prevCount => prevCount - 1)
             } else {
                 toast.error("someting went wrong...")

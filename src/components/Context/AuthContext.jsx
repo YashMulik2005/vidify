@@ -50,25 +50,6 @@ export const AuthProvider = ({ children }) => {
 
     }
 
-    const getUserDetails2 = async () => {
-
-        if (islogedIn) {
-            try {
-                const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/auth/userDetails`, {
-                    headers: {
-                        "authentication": `bearer ${token}`
-                    }
-                });
-                setuserDetails(res.data.data.data)
-            } catch (err) {
-                if (err.response.status == 401) {
-                    setuserDetails(undefined)
-                }
-            }
-        }
-
-    }
-
 
     const value = {
         formdata,
@@ -82,7 +63,6 @@ export const AuthProvider = ({ children }) => {
         getUserDetails,
         setislogedIn,
         islogedIn,
-        getUserDetails2
     }
     return <AuthContext.Provider value={value}>
         {children}
